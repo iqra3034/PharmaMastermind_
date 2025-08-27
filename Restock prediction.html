@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Sales Dashboard</title>
+    <link rel="stylesheet" href="/css/admindashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="shortcut icon" href="/pictures/icon.png" type="image/x-icon">
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="sidebar">
+        <div class="logo">
+            <img src="/pictures/log.jpeg" alt="Logo">
+        </div>
+        
+        <nav>
+            <a href="/dashboard" class="nav-item"><i class="fas fa-chart-line"></i> Business Intelligence</a>
+            <a href="/BIexpiry" class="nav-item"><i class="fas fa-exclamation-triangle"></i> Stock Expiry</a>
+            <a href="/restocking" class="nav-item active"><i class="fas fa-truck"></i> Restocking Prediction</a>
+            <a href="/customer-pattern" class="nav-item"><i class="fas fa-users"></i> Customer Purchase Pattern</a>
+            <a href="/seasonal-demand" class="nav-item"><i class="fas fa-calendar-alt"></i> Seasonal Demand Forecasting</a>
+            <a href="/smart-recommendation" class="nav-item"><i class="fas fa-lightbulb"></i> Smart Recommendation</a>
+             <a href="/adminusers" class="nav-item"><i class="fas fa-user-cog"></i> User Management</a>
+            <a href="/owner-approvals" class="nav-item"><i class="fas fa-user-check"></i> Pending Approvals</a>
+        </nav>
+        
+        <div class="logout">
+            <a href="{{ url_for('routes.logout') }}" class="nav-item"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+        <h1 style="text-align: center; margin-bottom: 20px;">Restocking Prediction</h1>
+        <div style="text-align:center; margin: 10px 0 20px;">
+            <button onclick="generateRestockReport()" style="background:#138BA8;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;">
+                <i class="fas fa-file-pdf"></i> Generate Report
+            </button>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="text-align: center; margin-bottom: 30px;">
+            <button id="showRestockProducts" class="btn btn-primary" style="background: #138BA8; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; margin-right: 20px;">
+                <i class="fas fa-exclamation-triangle"></i> Show Products Needing Restock
+            </button>
+            <button id="addToOrderBtn" class="btn btn-success" style="background: #27AE60; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; display: none;">
+                <i class="fas fa-cart-plus"></i> Add Selected to Order Cart
+            </button>
+        </div>
+        
+        <!-- Restock Products Table -->
+        <div id="restockProductsSection" style="display: none; margin-bottom: 30px;">
+            <div class="card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="color: #138BA8; margin-bottom: 20px;">
+                    <i class="fas fa-truck"></i> Products Requiring Immediate Restocking
+                </h3>
+                <div style="overflow-x: auto;">
+                    <table id="restockTable" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="padding: 12px; border: 1px solid #ddd;">
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                </th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Product Name</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Current Stock</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Days Until Restock</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Recommended Quantity</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Restock Date</th>
+                                <th style="padding: 12px; border: 1px solid #ddd;">Priority</th>
+                            </tr>
+                        </thead>
+                        <tbody id="restockTableBody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <iframe title="predict_restocks" width="1024" height="612" src="https://app.fabric.microsoft.com/view?r=eyJrIjoiYzI4NzZiNjQtNDM0ZC00NTcwLWE3MGYtNjE1NDAyYjIxODNhIiwidCI6IjE3OTZiZTkwLWJhNTktNDJjOC05ZmQ0LWM4MTFlMjI5MTdmMyIsImMiOjl9" frameborder="0" allowFullScreen="true">
+
+        </iframe>
+        
+    </main>
+    
+    <script src="/js/restock.js"></script>
+    <script>
+        async function generateRestockReport(){
+            try{
+                const res = await fetch('/dss/report/restock');
+                const data = await res.json();
+                if(data.pdf_url){ window.location.href = data.pdf_url; }
+                else{ alert(data.error || 'Failed to generate report'); }
+            }catch(e){ alert('Error generating report'); }
+        }
+    </script>
+</body>
+
+</html>
