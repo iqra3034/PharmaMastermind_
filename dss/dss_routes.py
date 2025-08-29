@@ -293,11 +293,20 @@ def predict_restocks():
         from sklearn.linear_model import LinearRegression
         import numpy as np
         from datetime import datetime, timedelta
+        from decimal import Decimal
 
         conn = mysql.connection
         cursor = conn.cursor()
 
-        # 1) Fetch only products that have orders (sales history)
+        # Helper function to convert Decimal → float
+        def to_float(val):
+            if val is None:
+                return 0.0
+            if isinstance(val, Decimal):
+                return float(val)
+            return float(val)
+
+        # 1) Products with sales history
         cursor.execute("""
             SELECT DISTINCT
                 p.product_id,
@@ -313,28 +322,21 @@ def predict_restocks():
         """)
         products = cursor.fetchall()
         
-        # Convert tuple results to dictionary format
-        product_dicts = []
-        for product in products:
-            product_dicts.append({
-                "product_id": product[0],
-                "product_name": product[1],
-                "stock_quantity": product[2],
-                "cost_price": product[3],
-                "price": product[4]
-            })
-        
-        products = product_dicts
-        print(f"DEBUG: Found {len(products)} products with sales history")
-        
-        if len(products) == 0:
-            return jsonify({"error": "No products with sales history found in database"}), 404
+        products = [{
+            "product_id": p[0],
+            "product_name": p[1],
+            "stock_quantity": to_float(p[2]),
+            "cost_price": to_float(p[3]),
+            "price": to_float(p[4])
+        } for p in products]
 
-        # Get all product IDs for the sales query
+        if not products:
+            return jsonify({"error": "No products with sales history"}), 404
+
         product_ids = [p['product_id'] for p in products]
         placeholders = ','.join(['%s'] * len(product_ids))
-        
-        # 2) Fetch monthly sales for ALL products
+
+        # 2) Monthly sales
         cursor.execute(f"""
             SELECT
                 oi.product_id,
@@ -349,179 +351,142 @@ def predict_restocks():
         """, product_ids)
         
         monthly_rows = cursor.fetchall()
-        
-        # Convert monthly sales data to dictionary format
-        monthly_dicts = []
-        for row in monthly_rows:
-            monthly_dicts.append({
-                "product_id": row[0],
-                "ym": row[1],
-                "qty": row[2]
-            })
-        
-        monthly_rows = monthly_dicts
-        print(f"DEBUG: Found {len(monthly_rows)} monthly sales records")
+        monthly_rows = [{"product_id": r[0], "ym": r[1], "qty": to_float(r[2])} for r in monthly_rows]
 
-        # Build: product_id -> { months:[1..n], sales:[q1..qn] }
         monthly_map = {}
         for r in monthly_rows:
             pid = r["product_id"]
-            if pid is None:
-                continue
             if pid not in monthly_map:
                 monthly_map[pid] = {"months": [], "sales": [], "labels": []}
             monthly_map[pid]["months"].append(len(monthly_map[pid]["months"]) + 1)
-            monthly_map[pid]["sales"].append(float(r["qty"] or 0))
+            monthly_map[pid]["sales"].append(to_float(r["qty"]))
             monthly_map[pid]["labels"].append(r["ym"])
 
         prediction_date = datetime.now().date()
         results = []
 
         for p in products:
-            pid = p["product_id"]
-            name = p["product_name"]
-            stock_qty = float(p["stock_quantity"] or 0)
-            cost_price = float(p["cost_price"] or 0)
-            price = float(p["price"] or 0)
-
-            # Month/Sales series
+            pid, name, stock_qty, cost_price, price = p.values()
             months = monthly_map.get(pid, {}).get("months", [])
             sales = monthly_map.get(pid, {}).get("sales", [])
 
-            # --- Linear Regression Forecast ---
+            # --- Linear Regression Forecast 
             forecast_units = 0
-            forecast_accuracy = 0.0
             if len(sales) >= 2 and sum(sales) > 0:
                 X = np.array(months).reshape(-1, 1)
                 y = np.array(sales, dtype=float)
-                model = LinearRegression()
-                model.fit(X, y)
+                model = LinearRegression().fit(X, y)
                 next_m = np.array([[len(months) + 1]])
                 forecast_units = max(int(round(model.predict(next_m)[0])), 0)
 
-                # Forecast accuracy (MAPE style, 0–100%)
-                last_actual = y[-1]
-                if last_actual > 0:
-                    forecast_accuracy = round(100 - (abs(last_actual - forecast_units) / last_actual) * 100, 2)
-                else:
-                    forecast_accuracy = 0.0
-            else:
-                forecast_units = 0
-                forecast_accuracy = 0.0
+            # 🔹 Forecast Accuracy 
+            cursor.execute("""
+                SELECT forecast_accuracy
+                FROM restock_prediction
+                WHERE product_id = %s
+                ORDER BY prediction_date DESC
+                LIMIT 1
+            """, (pid,))
+            db_row = cursor.fetchone()
+            forecast_accuracy = float(db_row[0]) if db_row and db_row[0] is not None else 0.0
 
-            # --- Demand & Restock logic ---
             avg_daily_demand = (forecast_units / 30.0) if forecast_units > 0 else 0.0
-            if avg_daily_demand > 0:
-                days_until_restock = int(stock_qty / avg_daily_demand)
-            else:
-                days_until_restock = 0
+            days_until_restock = int(stock_qty / avg_daily_demand) if avg_daily_demand > 0 else 0
             restock_date = (datetime.now() + timedelta(days=days_until_restock)).date()
-
             recommended_quantity = max(forecast_units, 1)
 
             # --- KPIs ---
             total_units_sold = float(sum(sales)) if sales else 0.0
             cogs_value = total_units_sold * cost_price
-
             avg_monthly_units = (np.mean(sales) if sales else 0.0)
             avg_inventory_units = (stock_qty + avg_monthly_units) / 2.0
 
-            if avg_inventory_units > 0:
-                turnover_rate = round(total_units_sold / avg_inventory_units, 4)
-            else:
-                turnover_rate = 0.0
+            turnover_rate = round(total_units_sold / avg_inventory_units, 4) if avg_inventory_units > 0 else 0.0
+            days_on_hand = round(stock_qty / avg_daily_demand, 2) if avg_daily_demand > 0 else 0.0
+            dsi = round(365 / turnover_rate, 2) if turnover_rate > 0 else 0.0
 
-            if avg_daily_demand > 0:
-                days_on_hand = round(stock_qty / avg_daily_demand, 2)
+            # Profit-based
+            unit_profit = price - cost_price
+            total_profit = forecast_units * unit_profit
+            if unit_profit > 50:
+                profit_priority = "High Profit"
+            elif unit_profit > 20:
+                profit_priority = "Medium Profit"
             else:
-                days_on_hand = 0.0
+                profit_priority = "Low Profit"
 
-            # Confidence based on months of data
+            # Demand-based
+            if avg_daily_demand > 10:
+                demand_priority = "High Demand"
+            elif avg_daily_demand > 3:
+                demand_priority = "Moderate Demand"
+            else:
+                demand_priority = "Low Demand"
+
+            # Reorder Point
+            lead_time = 7
+            safety_stock = forecast_units * 0.1
+            reorder_point = (avg_daily_demand * lead_time) + safety_stock
+
+            # Demand insights
+            if turnover_rate > 5:
+                demand_insight = "Fast Moving"
+            elif turnover_rate >= 2:
+                demand_insight = "Normal"
+            else:
+                demand_insight = "Slow Moving"
+
+            # Confidence
             mcount = len(sales)
-            if mcount >= 6:
-                prediction_confidence = "High"
-            elif mcount >= 3:
-                prediction_confidence = "Medium"
-            else:
-                prediction_confidence = "Low"
+            prediction_confidence = "High" if mcount >= 6 else "Medium" if mcount >= 3 else "Low"
 
-            # Build response row
             row = {
                 "product_id": pid,
                 "product_name": name,
                 "stock_quantity": stock_qty,
-                "forecast_sales_next_month": int(forecast_units),
-                "recommended_quantity": int(recommended_quantity),
-                "predicted_days_until_restock": int(days_until_restock),
+                "forecast_sales_next_month": forecast_units,
+                "recommended_quantity": recommended_quantity,
+                "predicted_days_until_restock": days_until_restock,
                 "restock_date": restock_date.strftime("%Y-%m-%d"),
                 "avg_daily_demand": round(avg_daily_demand, 2),
                 # KPIs
-                "inventory_turnover_rate": float(turnover_rate),
-                "days_on_hand": float(days_on_hand),
-                "forecast_accuracy": float(forecast_accuracy),
+                "inventory_turnover_rate": turnover_rate,
+                "days_on_hand": days_on_hand,
+                "days_sales_in_inventory": dsi,
+                "forecast_accuracy": forecast_accuracy,   # ✅ DB wali value
+                "profit_priority": profit_priority,
+                "demand_priority": demand_priority,
+                "reorder_point": round(reorder_point, 2),
+                "demand_insight": demand_insight,
                 "months_of_history": mcount,
                 "prediction_confidence": prediction_confidence,
+                "expected_profit": round(total_profit, 2)
             }
             results.append(row)
 
-            # ---------------- Smart Save ----------------
+            # Save/update DB
             cursor.execute("""
-                SELECT Prediction_id 
-                FROM restock_prediction
-                WHERE product_id = %s AND DATE(prediction_date) = DATE(%s)
-                LIMIT 1
-            """, (pid, prediction_date))
-            existing = cursor.fetchone()
-
-            if existing:
-                existing_id = existing[0]
-                cursor.execute("""
-                    UPDATE restock_prediction
-                    SET current_stock = %s,
-                        predicted_restock_date = %s,
-                        recommended_quantity = %s,
-                        turnover_rate = %s,
-                        days_on_hand = %s,
-                        forecast_accuracy = %s
-                    WHERE Prediction_id = %s
-                """, (
-                    stock_qty,
-                    restock_date,
-                    recommended_quantity,
-                    turnover_rate,
-                    days_on_hand,
-                    forecast_accuracy,
-                    existing_id
-                ))
-            else:
-                cursor.execute("""
-                    INSERT INTO restock_prediction
-                        (product_id, prediction_date, current_stock, predicted_restock_date,
-                         recommended_quantity, turnover_rate, days_on_hand, forecast_accuracy)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                """, (
-                    pid,
-                    prediction_date,
-                    stock_qty,
-                    restock_date,
-                    recommended_quantity,
-                    turnover_rate,
-                    days_on_hand,
-                    forecast_accuracy
-                ))
+                INSERT INTO restock_prediction
+                    (product_id, prediction_date, current_stock, predicted_restock_date,
+                     recommended_quantity, turnover_rate, days_on_hand, forecast_accuracy)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                ON DUPLICATE KEY UPDATE
+                    current_stock=VALUES(current_stock),
+                    predicted_restock_date=VALUES(predicted_restock_date),
+                    recommended_quantity=VALUES(recommended_quantity),
+                    turnover_rate=VALUES(turnover_rate),
+                    days_on_hand=VALUES(days_on_hand),
+                    forecast_accuracy=VALUES(forecast_accuracy)
+            """, (pid, prediction_date, stock_qty, restock_date, recommended_quantity,
+                  turnover_rate, days_on_hand, forecast_accuracy))
 
         conn.commit()
         cursor.close()
 
-        # Sort response by forecast descending
         results.sort(key=lambda r: r["forecast_sales_next_month"], reverse=True)
-        
-        print(f"DEBUG: Generated predictions for {len(results)} products")
-
         return jsonify(results)
 
     except Exception as e:
-        print(f"ERROR in predict_restocks: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
