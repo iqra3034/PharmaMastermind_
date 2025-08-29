@@ -35,41 +35,110 @@ def test_dss():
 
 #Decision Support System (DSS) Analysis
 @dss_bp.route("/dss", methods=['GET'])
+
 def decision_support_system_advanced():
+
     try:
+
         conn = mysql.connection
+
         cursor = conn.cursor()
 
-        # STEP 1: Query
+
+
+        # STEP 1: Query with comprehensive historical data including daily, weekly, monthly sales
+
         query = """
+
             SELECT 
+
                 oi.product_id,
+
                 p.product_name,
+
                 p.cost_price AS unit_cost_price,
+
                 p.price AS unit_selling_price,
+
                 SUM(oi.quantity) AS total_quantity,
+
                 SUM(oi.quantity * p.cost_price) AS total_cost,
-                SUM(oi.quantity * oi.unit_price) AS total_revenue
+
+                SUM(oi.quantity * oi.unit_price) AS total_revenue,
+
+                COUNT(DISTINCT o.order_id) AS total_orders,
+
+                MIN(o.order_date) AS first_sale_date,
+
+                MAX(o.order_date) AS last_sale_date,
+
+                AVG(oi.unit_price) AS avg_unit_price,
+
+                -- Daily sales (last 30 days)
+
+                COALESCE((
+
+                    SELECT SUM(oi2.quantity) 
+
+                    FROM order_items oi2 
+
+                    JOIN orders o2 ON oi2.order_id = o2.order_id 
+
+                    WHERE oi2.product_id = oi.product_id 
+
+                    AND o2.order_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+
+                ), 0) AS daily_sales_30,
+
+                -- Weekly sales (last 4 weeks)
+
+                COALESCE((
+
+                    SELECT SUM(oi2.quantity) 
+
+                    FROM order_items oi2 
+
+                    JOIN orders o2 ON oi2.order_id = o2.order_id 
+
+                    WHERE oi2.product_id = oi.product_id 
+
+                    AND o2.order_date >= DATE_SUB(CURDATE(), INTERVAL 28 DAY)
+                ), 0) AS weekly_sales_4,
+                -- Monthly sales (last 3 months)
+                COALESCE((
+                    SELECT SUM(oi2.quantity) 
+                    FROM order_items oi2 
+                    JOIN orders o2 ON oi2.order_id = o2.order_id 
+                    WHERE oi2.product_id = oi.product_id 
+                    AND o2.order_date >= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
+                ), 0) AS monthly_sales_3
             FROM order_items oi
             JOIN products p ON oi.product_id = p.product_id
+            JOIN orders o ON oi.order_id = o.order_id
+            WHERE o.order_date >= '2024-01-01'
             GROUP BY oi.product_id, p.product_name, p.cost_price, p.price
+            ORDER BY total_revenue DESC
+
         """
         cursor.execute(query)
         rows = cursor.fetchall()
         columns = [desc[0] for desc in cursor.description]
-
         results = [dict(zip(columns, row)) for row in rows]
 
         if not results:
             return jsonify({"error": "No data found."}), 404
 
+
         import numpy as np
         from sklearn.cluster import KMeans
+        from datetime import datetime
 
-        quantities = [item["total_quantity"] for item in results]
+        # Convert all quantities to float to avoid decimal/float conflicts
+        quantities = [float(item["total_quantity"]) for item in results]
         quantity_array = np.array(quantities).reshape(-1, 1)
 
         # STEP 2: KMeans
+
         if len(quantities) >= 3:
             kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
             labels = kmeans.fit_predict(quantity_array)
@@ -85,22 +154,66 @@ def decision_support_system_advanced():
 
         formatted_results = []
         for item, label in zip(results, labels):
+            # Convert all decimal values to float
             cost_price = float(item["unit_cost_price"])
             selling_price = float(item["unit_selling_price"])
             total_cost = float(item["total_cost"])
             total_revenue = float(item["total_revenue"])
-            quantity_sold = item["total_quantity"]
+            quantity_sold = float(item["total_quantity"])
 
-            profit_margin = ((total_revenue - total_cost) / total_revenue * 100) if total_revenue > 0 else 0.0
+            # Core calculations
+            total_profit = total_revenue - total_cost
+            profit_margin = (total_profit / total_revenue * 100) if total_revenue > 0 else 0.0
+            if profit_margin < 0: 
+                profit_margin = abs(profit_margin)
+            if profit_margin > 100: 
+                profit_margin = 100.0
+            gross_profit_margin = (total_profit / total_revenue * 100) if total_revenue > 0 else 0.0
+            sales_revenue = total_revenue
             demand_level = demand_mapping.get(label, "Low")
 
+            # Sales metrics
+            daily_sales_30 = float(item.get("daily_sales_30", 0))
+            weekly_sales_4 = float(item.get("weekly_sales_4", 0))
+            monthly_sales_3 = float(item.get("monthly_sales_3", 0))
+            total_orders = int(item.get("total_orders", 0))
+            first_sale_date = item.get("first_sale_date")
+            last_sale_date = item.get("last_sale_date")
+            avg_unit_price = float(item.get("avg_unit_price", 0))
+
+            # Sales velocity
+            if first_sale_date and last_sale_date:
+                date_diff = (last_sale_date - first_sale_date).days
+                sales_velocity = round(quantity_sold / max(date_diff / 30.0, 1.0), 2) if date_diff > 0 else 0.0
+            else:
+                sales_velocity = 0.0
+
+            days_since_last_sale = (datetime.now() - last_sale_date).days if last_sale_date else 0
+
+
             formatted_results.append({
+
                 "product_name": item["product_name"],
                 "cost_price": f"Rs. {cost_price:.2f}",
                 "selling_price": f"Rs. {selling_price:.2f}",
+                "quantity_sold": f"{quantity_sold} units",
+                "total_orders": total_orders,
+                "total_cost": total_cost,
+                "total_revenue": total_revenue,
+                "total_profit": total_profit,
                 "profit_margin": f"{profit_margin:.2f}%",
+                "gross_profit_margin": f"{gross_profit_margin:.2f}%",
+                "sales_revenue": sales_revenue,
                 "demand_level": demand_level,
-                "quantity_sold": f"{quantity_sold} units"
+                "daily_sales_30": f"{daily_sales_30} units",
+                "weekly_sales_4": f"{weekly_sales_4} units", 
+                "monthly_sales_3": f"{monthly_sales_3} units",
+                "sales_velocity": f"{sales_velocity} units/month",
+                "first_sale_date": first_sale_date.strftime("%Y-%m-%d") if first_sale_date else "N/A",
+                "last_sale_date": last_sale_date.strftime("%Y-%m-%d") if last_sale_date else "N/A",
+                "avg_unit_price": f"Rs. {avg_unit_price:.2f}",
+                "days_since_last_sale": days_since_last_sale,
+                "data_quality": "High" if sales_velocity > 10 else "Medium" if sales_velocity > 5 else "Low"
             })
 
             # STEP 3: INSERT or UPDATE
@@ -114,7 +227,12 @@ def decision_support_system_advanced():
                         cost_price = %s,
                         selling_price = %s,
                         profit_margin = %s,
-                        demand_level = %s
+                        demand_level = %s,
+                        total_cost = %s,
+                        total_revenue = %s,
+                        total_profit = %s,
+                        gross_profit_margin = %s,
+                        sales_revenue = %s
                     WHERE product_id = %s
                 """, (
                     item["product_name"],
@@ -122,26 +240,43 @@ def decision_support_system_advanced():
                     selling_price,
                     profit_margin,
                     demand_level,
+                    total_cost,
+                    total_revenue,
+                    total_profit,
+                    gross_profit_margin,
+                    sales_revenue,
                     item["product_id"]
+
                 ))
             else:
                 cursor.execute("""
                     INSERT INTO profit_records 
-                    (product_id, product_name, cost_price, selling_price, profit_margin, demand_level) 
-                    VALUES (%s, %s, %s, %s, %s, %s)
+                    (product_id, product_name, cost_price, selling_price, profit_margin, demand_level, 
+                     total_cost, total_revenue, total_profit, gross_profit_margin, sales_revenue) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON DUPLICATE KEY UPDATE
                     product_name = VALUES(product_name),
                     cost_price = VALUES(cost_price),
                     selling_price = VALUES(selling_price),
                     profit_margin = VALUES(profit_margin),
-                    demand_level = VALUES(demand_level)
+                    demand_level = VALUES(demand_level),
+                    total_cost = VALUES(total_cost),
+                    total_revenue = VALUES(total_revenue),
+                    total_profit = VALUES(total_profit),
+                    gross_profit_margin = VALUES(gross_profit_margin),
+                    sales_revenue = VALUES(sales_revenue)
                 """, (
                     item["product_id"],
                     item["product_name"],
                     cost_price,
                     selling_price,
                     profit_margin,
-                    demand_level
+                    demand_level,
+                    total_cost,
+                    total_revenue,
+                    total_profit,
+                    gross_profit_margin,
+                    sales_revenue
                 ))
 
         conn.commit()
@@ -195,14 +330,11 @@ def predict_restocks():
         if len(products) == 0:
             return jsonify({"error": "No products with sales history found in database"}), 404
 
-        # Get all product IDs for the sales query (these are guaranteed to have orders)
+        # Get all product IDs for the sales query
         product_ids = [p['product_id'] for p in products]
         placeholders = ','.join(['%s'] * len(product_ids))
         
-        # ----------------------------------------------------------
         # 2) Fetch monthly sales for ALL products
-        # Fix: Use double % to escape the % characters in SQL
-        # ----------------------------------------------------------
         cursor.execute(f"""
             SELECT
                 oi.product_id,
@@ -234,12 +366,10 @@ def predict_restocks():
         monthly_map = {}
         for r in monthly_rows:
             pid = r["product_id"]
-            
             if pid is None:
                 continue
             if pid not in monthly_map:
                 monthly_map[pid] = {"months": [], "sales": [], "labels": []}
-            # append in order
             monthly_map[pid]["months"].append(len(monthly_map[pid]["months"]) + 1)
             monthly_map[pid]["sales"].append(float(r["qty"] or 0))
             monthly_map[pid]["labels"].append(r["ym"])
@@ -254,7 +384,7 @@ def predict_restocks():
             cost_price = float(p["cost_price"] or 0)
             price = float(p["price"] or 0)
 
-            # Month/Sales series (can be empty if no orders)
+            # Month/Sales series
             months = monthly_map.get(pid, {}).get("months", [])
             sales = monthly_map.get(pid, {}).get("sales", [])
 
@@ -269,47 +399,40 @@ def predict_restocks():
                 next_m = np.array([[len(months) + 1]])
                 forecast_units = max(int(round(model.predict(next_m)[0])), 0)
 
-                # Forecast accuracy vs last actual month (as per your formula)
+                # Forecast accuracy (MAPE style, 0–100%)
                 last_actual = y[-1]
                 if last_actual > 0:
-                    forecast_accuracy = ((last_actual - forecast_units) / last_actual) * 100.0
+                    forecast_accuracy = round(100 - (abs(last_actual - forecast_units) / last_actual) * 100, 2)
                 else:
                     forecast_accuracy = 0.0
             else:
-                # not enough data → fallback (0 forecast)
                 forecast_units = 0
                 forecast_accuracy = 0.0
 
             # --- Demand & Restock logic ---
             avg_daily_demand = (forecast_units / 30.0) if forecast_units > 0 else 0.0
             if avg_daily_demand > 0:
-                days_until_restock = int(stock_qty // avg_daily_demand)
+                days_until_restock = int(stock_qty / avg_daily_demand)
             else:
-                days_until_restock = 365
-            days_until_restock = min(max(days_until_restock, 7), 365)
+                days_until_restock = 0
             restock_date = (datetime.now() + timedelta(days=days_until_restock)).date()
 
-            recommended_quantity = max(forecast_units, 1)  # next 30 days proxy
+            recommended_quantity = max(forecast_units, 1)
 
-            # --- KPIs (value-based to match formulas) ---
-            
+            # --- KPIs ---
             total_units_sold = float(sum(sales)) if sales else 0.0
-            cogs_value = total_units_sold * cost_price  # cost of sales for period
+            cogs_value = total_units_sold * cost_price
 
-            # Average Inventory 
             avg_monthly_units = (np.mean(sales) if sales else 0.0)
             avg_inventory_units = (stock_qty + avg_monthly_units) / 2.0
-            avg_inventory_value = cost_price * avg_inventory_units
 
-            # Inventory Turnover Rate = COGS / Average Inventory
-            if avg_inventory_value > 0:
-                turnover_rate = round(cogs_value / avg_inventory_value, 4)
+            if avg_inventory_units > 0:
+                turnover_rate = round(total_units_sold / avg_inventory_units, 4)
             else:
                 turnover_rate = 0.0
 
-            # Days on Hand = (Average Inventory / COGS) * 365
-            if cogs_value > 0:
-                days_on_hand = round((avg_inventory_value / cogs_value) * 365.0, 2)
+            if avg_daily_demand > 0:
+                days_on_hand = round(stock_qty / avg_daily_demand, 2)
             else:
                 days_on_hand = 0.0
 
@@ -333,16 +456,15 @@ def predict_restocks():
                 "restock_date": restock_date.strftime("%Y-%m-%d"),
                 "avg_daily_demand": round(avg_daily_demand, 2),
                 # KPIs
-                "inventory_turnover_rate": float(round(turnover_rate, 4)),
+                "inventory_turnover_rate": float(turnover_rate),
                 "days_on_hand": float(days_on_hand),
-                "forecast_accuracy": float(round(forecast_accuracy, 2)),
+                "forecast_accuracy": float(forecast_accuracy),
                 "months_of_history": mcount,
                 "prediction_confidence": prediction_confidence,
             }
             results.append(row)
 
-            # ---------------- Smart Save (once per product per day) ----------------
-            
+            # ---------------- Smart Save ----------------
             cursor.execute("""
                 SELECT Prediction_id 
                 FROM restock_prediction
@@ -352,10 +474,7 @@ def predict_restocks():
             existing = cursor.fetchone()
 
             if existing:
-                
                 existing_id = existing[0]
-                
-               
                 cursor.execute("""
                     UPDATE restock_prediction
                     SET current_stock = %s,
@@ -371,7 +490,7 @@ def predict_restocks():
                     recommended_quantity,
                     turnover_rate,
                     days_on_hand,
-                    round(forecast_accuracy, 2),
+                    forecast_accuracy,
                     existing_id
                 ))
             else:
@@ -388,13 +507,13 @@ def predict_restocks():
                     recommended_quantity,
                     turnover_rate,
                     days_on_hand,
-                    round(forecast_accuracy, 2)
+                    forecast_accuracy
                 ))
 
         conn.commit()
         cursor.close()
 
-        # Sort response by forecast descending (optional)
+        # Sort response by forecast descending
         results.sort(key=lambda r: r["forecast_sales_next_month"], reverse=True)
         
         print(f"DEBUG: Generated predictions for {len(results)} products")
@@ -406,6 +525,7 @@ def predict_restocks():
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
 
 # Expiry alerts
 @dss_bp.route('/expiry_alerts', methods=['GET'])
