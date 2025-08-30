@@ -28,7 +28,7 @@ app.config['SESSION_COOKIE_SECURE'] = False
 CORS(app, supports_credentials=True)
 
 # Stripe configuration
-stripe.api_key = 'sk_test_51JY6DwHmNGByIcZOsJbjlzGX4Hx2OHOm9jjDcfLAG5utDgtmh1mLRDymt8zvrFR15Ha8CPLNRTF2q5okGbr7O7rd00N4l6zrfg'  
+stripe.api_key = 'sk_test_51RvFpAFnsPUQVISnTuNYVEFQlPbjSU8HBH3sxC5nFLLIBnnuJxs9cggYNENqUKD9PWdD4jPihDlkHeMTJD5l7PxF00Arox9DUH'  
 
 # flask_mysqldb with XAMPP
 app.config['MYSQL_USER'] = 'root'
