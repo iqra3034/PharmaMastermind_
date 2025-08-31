@@ -19,7 +19,7 @@ async function fetchPendingApprovals() {
         
     } catch (error) {
         console.error('Error fetching pending approvals:', error);
-        showNotification('Error loading pending approvals', 'error');
+        
     }
 }
 
@@ -86,11 +86,11 @@ function displayApprovals(approvals) {
 function updateStatistics() {
     const totalPending = pendingApprovals.length;
     const adminRequests = pendingApprovals.filter(a => a.role === 'admin').length;
-    const employeeRequests = pendingApprovals.filter(a => a.role === 'employee').length;
+
     
     document.getElementById('totalPending').textContent = totalPending;
     document.getElementById('totalAdminRequests').textContent = adminRequests;
-    document.getElementById('totalEmployeeRequests').textContent = employeeRequests;
+    
 }
 
 async function handleApproval(approvalId, action) {

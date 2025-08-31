@@ -29,7 +29,7 @@ def reset_password_page():
 def dashboard():
     role = session.get("role")
     if role in ["admin", "owner"]:
-        return render_template("admindashboard.html")
+        return render_template("ownerdashboard.html")
     elif role == "employee":
         return redirect(url_for('routes.point_of_sale'))
     elif role == ["customer", "owner","admin"]:
@@ -201,4 +201,4 @@ def profit_margin():
     role = session.get("role")
     if role not in ["owner", "admin"]:
         return "Unauthorized access", 403
-    return render_template('admindashboard.html')
+    return render_template('ownerdashboard.html')
