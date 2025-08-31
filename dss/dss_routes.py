@@ -1382,6 +1382,8 @@ def customer_purchase_patterns():
             })
 
         results = []
+        sequence_number = 1   
+
         for customer_id, items in data.items():
             total_quantity = sum(d["quantity"] for d in items)
             total_unit_price_sum = sum(d["quantity"] * d["unit_price"] for d in items)
@@ -1412,6 +1414,7 @@ def customer_purchase_patterns():
 
             results.append({
                 "customer_id": customer_id,
+                "customer_": sequence_number,   # 👈 yahan apna custom sequence aa raha hai
                 "product_ids": ", ".join({str(d["product_id"]) for d in items}),
                 "product_name": ", ".join({d["product_name"] for d in items}),
                 "product_sales": f"{round(product_sales, 2)} PKR",
@@ -1424,15 +1427,15 @@ def customer_purchase_patterns():
                 "fahp_score": f"{round(fahp_score, 4)} (FAHP Index)"
             })
 
-
-            # Save Results to Database with UPSERT to prevent duplicates
+            # Save Results to Database with UPSERT
             upsert_query = """
             INSERT INTO customer_purchase_patterns
-            (customer_id, product_id, product_name, total_quantity_purchased, 
+            (customer_id, customer_, product_id, product_name, total_quantity_purchased, 
              product_sales, gross_margin, inventory_turnover_rate, 
              fahp_score, purchase_frequency, next_predicted_purchase_date, confidence_score) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE
+            customer_ = VALUES(customer_),
             product_name = VALUES(product_name),
             total_quantity_purchased = VALUES(total_quantity_purchased),
             product_sales = VALUES(product_sales),
@@ -1445,6 +1448,7 @@ def customer_purchase_patterns():
             """
             cursor.execute(upsert_query, (
                 customer_id,
+                sequence_number,   # 👈 ab DB me bhi sequence save hoga
                 results[-1]["product_ids"],
                 results[-1]["product_name"],
                 total_quantity,
@@ -1456,6 +1460,8 @@ def customer_purchase_patterns():
                 results[-1]["next_predicted_purchase_date"],
                 confidence_score
             ))
+
+            sequence_number += 1  
 
         conn.commit()
         cursor.close()
