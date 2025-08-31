@@ -754,21 +754,41 @@ def report_restock():
     try:
         conn = mysql.connection
         cursor = conn.cursor()
+
+        # Fetch data from DB
         cursor.execute(
             """
-            SELECT product_id, current_stock, predicted_restock_date, recommended_quantity
+            SELECT product_id, prediction_date, current_stock, predicted_restock_date, recommended_quantity, 
+                   days_on_hand, forecast_accuracy, last_updated
             FROM restock_prediction
-            ORDER BY predicted_restock_date ASC
             """
         )
         rows = cursor.fetchall()
+
+        # Remove duplicate product_id rows (keep first occurrence)
+        unique_rows = {}
+        for row in rows:
+            product_id = row[0]  # assuming product_id is the first column
+            if product_id not in unique_rows:
+                unique_rows[product_id] = row
+        rows = list(unique_rows.values())
+
+        # Column headers for PDF
+        columns = [
+            'Product ID', 'Prediction Date', 'Current Stock', 'Restock Date', 
+            'Recommended Quantity', 'Days On Hand', 'Forecast Accuracy', 'Last Updated'
+        ]
+
+        # Generate PDF report
         pdf_path = _generate_pdf_report(
             title='Restock Prediction Report',
-            columns=['Product ID', 'Current Stock', 'Predicted Restock Date', 'Recommended Qty'],
+            columns=columns,
             rows=rows
         )
+
         cursor.close()
         return jsonify({"pdf_url": f"/dss/download_report/{os.path.basename(pdf_path)}"})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

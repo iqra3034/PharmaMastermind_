@@ -40,46 +40,7 @@
             <button onclick="generateRestockReport()" style="background:#138BA8;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;">
                 <i class="fas fa-file-pdf"></i> Generate Report
             </button>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div style="text-align: center; margin-bottom: 30px;">
-            <button id="showRestockProducts" class="btn btn-primary" style="background: #138BA8; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; margin-right: 20px;">
-                <i class="fas fa-exclamation-triangle"></i> Show Products Needing Restock
-            </button>
-            <button id="addToOrderBtn" class="btn btn-success" style="background: #27AE60; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; display: none;">
-                <i class="fas fa-cart-plus"></i> Add Selected to Order Cart
-            </button>
-        </div>
-        
-        <!-- Restock Products Table -->
-        <div id="restockProductsSection" style="display: none; margin-bottom: 30px;">
-            <div class="card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <h3 style="color: #138BA8; margin-bottom: 20px;">
-                    <i class="fas fa-truck"></i> Products Requiring Immediate Restocking
-                </h3>
-                <div style="overflow-x: auto;">
-                    <table id="restockTable" style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background: #f8f9fa;">
-                                <th style="padding: 12px; border: 1px solid #ddd;">
-                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
-                                </th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Product Name</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Current Stock</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Days Until Restock</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Recommended Quantity</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Restock Date</th>
-                                <th style="padding: 12px; border: 1px solid #ddd;">Priority</th>
-                            </tr>
-                        </thead>
-                        <tbody id="restockTableBody">
-                            <!-- Data will be populated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        </div>        
         
         <iframe title="restock prediction" width="1015" height="1200" src="https://app.powerbi.com/view?r=eyJrIjoiYzc1NTU3NjItMzU3OC00MGU4LWI1NWMtMjIzYWJhYmM1MjBjIiwidCI6IjE3OTZiZTkwLWJhNTktNDJjOC05ZmQ0LWM4MTFlMjI5MTdmMyIsImMiOjl9" frameborder="0" allowFullScreen="true">
 
