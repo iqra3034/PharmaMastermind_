@@ -141,6 +141,17 @@ async function saveOrder() {
     const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const changeAmount = paidAmount - totalAmount;
 
+    // Validation check
+    if (paidAmount <= 0) {
+        showPopup("Please enter a valid paid amount.", "error");
+        return;
+    }
+
+    if (changeAmount < 0) {
+        showPopup("Paid amount is less than total. Cannot save order.", "error");
+        return;
+    }
+
     try {
         const response = await fetch('/api/save_order', {
             method: 'POST',
