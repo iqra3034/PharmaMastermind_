@@ -77,14 +77,7 @@ function displayUsers(userList) {
             <td>
                 <span class="status-badge status-active">Active</span>
             </td>
-            <td>
-                <button class="action-btn edit-btn" onclick="editUser(${user.id})" title="Edit User">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="action-btn delete-btn" onclick="openDeleteModal(${user.id})" title="Delete User">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
+           
         `;
         tableBody.appendChild(row);
     });
