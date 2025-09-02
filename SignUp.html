@@ -254,7 +254,8 @@
   }
 
   const nameRegex = /^[A-Za-z]+$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // ✅ Only allow gmail.com and yahoo.com
+  const emailRegex = /^[^\s@]+@(gmail\.com|yahoo\.com)$/;
   const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
 
   const firstNameInput = document.getElementById("first-name");
@@ -289,7 +290,7 @@
 
   function validateEmail() {
     if (!emailRegex.test(emailInput.value)) {
-      emailError.textContent = "Enter a valid email address.";
+      emailError.textContent = "Please enter a valid email address.";
       return false;
     }
     emailError.textContent = "";
@@ -351,23 +352,23 @@
         })
         .then(data => {
           if (data.success) {
-                    if (formData.role === 'customer') {
-                        showPopup(data.message); // Success message
-                        // Store email for verification
-                        sessionStorage.setItem('verificationEmail', formData.email);
-                        sessionStorage.setItem('verificationName', `${formData.firstName} ${formData.lastName}`);
-                        setTimeout(() => {
-                            sessionStorage.removeItem('signupRole');
-                            window.location.href = "/verification";
-                        }, 3000);
-                    } else {
-                        // For admin/employee - show pending approval message
-                        showPopup("Registration submitted! Waiting for owner approval.", "success");
-                        setTimeout(() => {
-                            sessionStorage.removeItem('signupRole');
-                            window.location.href = "/signin";
-                        }, 3000);
-                    }
+            if (formData.role === 'customer') {
+              showPopup(data.message); // Success message
+              // Store email for verification
+              sessionStorage.setItem('verificationEmail', formData.email);
+              sessionStorage.setItem('verificationName', `${formData.firstName} ${formData.lastName}`);
+              setTimeout(() => {
+                sessionStorage.removeItem('signupRole');
+                window.location.href = "/verification";
+              }, 3000);
+            } else {
+              // For admin/employee - show pending approval message
+              showPopup("Registration submitted! Waiting for owner approval.", "success");
+              setTimeout(() => {
+                sessionStorage.removeItem('signupRole');
+                window.location.href = "/signin";
+              }, 3000);
+            }
           } else {
             showPopup(data.message || "Signup failed", true);
           }
@@ -379,6 +380,7 @@
     }
   });
 </script>
+
 
 </body>
 

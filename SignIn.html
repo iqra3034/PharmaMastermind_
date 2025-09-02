@@ -262,17 +262,20 @@
     passwordInput.insertAdjacentElement("afterend", passwordError);
 
     // Live validation for email
-    emailInput.addEventListener("input", () => {
-        const emailValue = emailInput.value.trim();
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailValue) {
-            emailError.textContent = "Email is required.";
-        } else if (!emailRegex.test(emailValue)) {
-            emailError.textContent = "Invalid email format.";
-        } else {
-            emailError.textContent = "";
-        }
-    });
+    // Live validation for email
+emailInput.addEventListener("input", () => {
+    const emailValue = emailInput.value.trim();
+    const emailRegex = /^[^\s@]+@(gmail\.com|yahoo\.com)$/i;  // ✅ sirf gmail aur yahoo allow
+
+    if (!emailValue) {
+        emailError.textContent = "Email is required.";
+    } else if (!emailRegex.test(emailValue)) {
+        emailError.textContent = "Please enter a valid email address.";
+    } else {
+        emailError.textContent = "";
+    }
+});
+
 
     // Live validation for password
     passwordInput.addEventListener("input", () => {
