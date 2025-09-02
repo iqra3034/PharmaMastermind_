@@ -61,7 +61,7 @@ def signsup():
 
     
 
-    # For customers: send email verification. For admin/employee: no email, only owner approval.
+    # For customers: send email verification. For admin/employee: no email, only admin approval.
     if role == 'customer':
         verification_code = email_service.generate_verification_code()
         code_expiry = datetime.now() + timedelta(minutes=10)
@@ -105,10 +105,10 @@ def signsup():
             else:
                 return jsonify({"success": False, "message": "Failed to send verification email"}), 500
         else:
-            # Admin/Employee: no email, just wait for owner approval
+            # Admin/Employee: no email, just wait for admin approval
             return jsonify({
                 "success": True,
-                "message": "Registration submitted! Waiting for owner approval.",
+                "message": "Registration submitted! Waiting for admin approval.",
                 "email": email
             }), 200
             
