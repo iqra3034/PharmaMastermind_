@@ -32,7 +32,7 @@ stripe.api_key = 'sk_test_51RvFpAFnsPUQVISnTuNYVEFQlPbjSU8HBH3sxC5nFLLIBnnuJxs9c
 
 # flask_mysqldb with XAMPP
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'system'
+app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'dogarmedicalstore'
 app.config['MYSQL_HOST'] = 'localhost'
 
