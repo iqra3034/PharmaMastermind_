@@ -12,6 +12,9 @@
 html {
   scroll-behavior: smooth;
 }
+.justified-text {
+  text-align: justify;
+}
 
 * {
     margin: 0;
