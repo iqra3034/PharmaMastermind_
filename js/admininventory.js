@@ -121,45 +121,6 @@ async function addExpiryProductsToOrder() {
     }
 }
 
-async function addRestockProductsToOrder() {
-    try {
-        const response = await fetch('/api/predict_restocks');
-        const restockData = await response.json();
-        
-        if (restockData.error) {
-            throw new Error(restockData.error);
-        }
-        
-        // Filter urgent restock products (within 14 days)
-        const urgentRestock = restockData.filter(product => product.predicted_days_until_restock <= 14);
-        
-        if (urgentRestock.length === 0) {
-            showNotification('No urgent restock products found!', 'info');
-            return;
-        }
-        
-        // Convert to order format
-        const orderProducts = urgentRestock.map(product => ({
-            name: product.product_name,
-            price: 150, // Default price for restock
-            quantity: product.recommended_quantity
-        }));
-        
-        // Store in sessionStorage
-        sessionStorage.setItem('restockProducts', JSON.stringify(orderProducts));
-        
-        showNotification(`${urgentRestock.length} restock products added to order cart!`, 'success');
-        
-        // Redirect to order page
-        setTimeout(() => {
-            window.location.href = '/order';
-        }, 1500);
-        
-    } catch (error) {
-        console.error('Error fetching restock products:', error);
-        showNotification('Error loading restock products', 'error');
-    }
-}
 
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
