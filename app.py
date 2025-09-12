@@ -104,7 +104,7 @@ def signsup():
                 }), 200
             else:
                 return jsonify({"success": False, "message": "Failed to send verification email"}), 500
-        else:
+        
             # Admin/Employee: no email, just wait for admin approval
             return jsonify({
                 "success": True,

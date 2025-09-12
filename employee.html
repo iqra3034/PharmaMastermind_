@@ -19,10 +19,9 @@
 
                 <a href="/expiry" class="nav-item "><i class="fas fa-exclamation-circle text-red-500"></i>Expiry
                 </a>
-                <a href="/admin-approvals" class="nav-item"><i class="fas fa-user-check"></i> Pending Approvals</a>
                 <a href="/employes" class="nav-item active "><i class="fas fa-users"></i> Employees</a>
                 <a href="/customerdashboard" class="nav-item "><i class="fas fa-users"></i> Customer Details</a>
-               
+                <a href="/pos" class="nav-item "><i class="fas fa-shopping-cart"></i> pos</a>
 
 
 
@@ -59,7 +58,7 @@
                 </button>
             </div>
 
-            <!-- Employee Cards -->
+            <!-- Employee Statistics Cards -->
             <div class="employee-stats">
                 <div class="stat-card">
                     <div class="stat-icon">
@@ -113,7 +112,7 @@
         </div>
     </div>
 
-    <!-- Adding/editing employees -->
+    <!-- Modal for adding/editing employees -->
     <div id="employeeModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
@@ -122,7 +121,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="empId">Employee ID</label>
-                        <input type="text" id="empId" required placeholder="Enter employee ID"  readonly>
+                        <input type="text" id="empId" required placeholder="Enter employee ID">
                     </div>
                     <div class="form-group">
                         <label for="name">Full Name</label>
@@ -157,6 +156,7 @@
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
     <div id="deleteModal" class="modal">
         <div class="modal-content delete-modal">
             <div class="delete-icon">
