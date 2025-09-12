@@ -172,7 +172,6 @@
   </div>
 
   <style>
-  /* Popup container */
   .popup-message {
     position: fixed;
     top: 20px; 
@@ -188,33 +187,27 @@
     transition: opacity 0.3s ease-in-out;
   }
 
-  /* Error styling */
   .popup-error {
     background-color: #f44336; 
   }
 
-  /* Show animation */
   .popup-show {
     opacity: 1;
   }
 </style>
 
 <script>
-  // Get selected role from sessionStorage
   const signupRole = sessionStorage.getItem('signupRole');
   
-  // Update UI and set role based on selection
   if (signupRole) {
     const roleSelect = document.getElementById('role');
     const roleGroup = document.getElementById('roleGroup');
     const signupTitle = document.getElementById('signupTitle');
     const signupDescription = document.getElementById('signupDescription');
     
-    // Set the role and hide the dropdown
     roleSelect.value = signupRole;
     roleGroup.style.display = 'none';
     
-    // Update title and description
     switch(signupRole) {
       case 'owner':
         signupTitle.textContent = 'Owner Registration';
@@ -235,7 +228,6 @@
     }
   }
 
-  // Function to show popup
   function showPopup(message, isError = false) {
     const popup = document.createElement("div");
     popup.className = "popup-message";
@@ -254,7 +246,7 @@
   }
 
   const nameRegex = /^[A-Za-z]+$/;
-  // ✅ Only allow gmail.com and yahoo.com
+  
   const emailRegex = /^[^\s@]+@(gmail\.com|yahoo\.com)$/;
   const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
 
@@ -353,8 +345,8 @@
         .then(data => {
           if (data.success) {
             if (formData.role === 'customer') {
-              showPopup(data.message); // Success message
-              // Store email for verification
+              showPopup(data.message); 
+             
               sessionStorage.setItem('verificationEmail', formData.email);
               sessionStorage.setItem('verificationName', `${formData.firstName} ${formData.lastName}`);
               setTimeout(() => {
@@ -362,7 +354,6 @@
                 window.location.href = "/verification";
               }, 3000);
             } else {
-              // For admin/employee - show pending approval message
               showPopup("Registration submitted! Waiting for owner approval.", "success");
               setTimeout(() => {
                 sessionStorage.removeItem('signupRole');

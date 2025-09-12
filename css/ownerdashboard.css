@@ -25,7 +25,6 @@ body {
     color: var(--text-primary);
 }
 
-/* Sidebar Styles */
 .sidebar {
     position: fixed;
     left: 0;
@@ -98,7 +97,6 @@ body {
     padding-top: 20px;
 }
 
-/* Main Content Styles */
 main {
     margin-left: 280px;
     padding: 40px;
@@ -133,7 +131,6 @@ main {
     color: var(--primary-color);
 }
 
-/* Sales Overview Section */
 .sales-overview {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -155,7 +152,6 @@ main {
     margin-top: 15px;
 }
 
-/* Products Performance Section */
 .products-performance {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -195,7 +191,6 @@ main {
     font-weight: 600;
 }
 
-/* Near Expiry Table */
 table {
     width: 100%;
     border-collapse: separate;
@@ -255,7 +250,6 @@ tr:hover td {
     box-shadow: var(--shadow-sm);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .sidebar {
         width: 200px;

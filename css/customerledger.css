@@ -292,7 +292,6 @@
     box-shadow: var(--shadow-sm);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .ledger-modal-content {
         width: 98%;

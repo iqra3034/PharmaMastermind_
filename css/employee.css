@@ -27,7 +27,6 @@ body {
     position: relative;
 }
 
-/* Sidebar Styles */
 .sidebar {
     position: fixed;
     left: 0;
@@ -92,7 +91,6 @@ body {
     padding-top: 20px;
 }
 
-/* Main Content Styles */
 .main-content {
     flex: 1;
     padding: 32px;
@@ -181,7 +179,6 @@ header {
     color: var(--primary-color);
 }
 
-/* Content Styles */
 .content {
     background-color: white;
     border-radius: 12px;
@@ -231,7 +228,6 @@ header {
     box-shadow: 0 4px 12px rgba(19, 139, 168, 0.2);
 }
 
-/* Employee Statistics */
 .employee-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -279,7 +275,6 @@ header {
     font-size: 14px;
 }
 
-/* Table Styles */
 .employee-table {
     overflow-x: auto;
     border-radius: 8px;
@@ -344,7 +339,6 @@ tr:hover {
     background-color: #f8fafc;
 }
 
-/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -471,7 +465,6 @@ tr:hover {
     box-shadow: 0 4px 12px rgba(19, 139, 168, 0.2);
 }
 
-/* Delete Modal */
 .delete-modal {
     text-align: center;
     max-width: 400px;
@@ -524,7 +517,6 @@ tr:hover {
     transform: translateY(-1px);
 }
 
-/* Action Buttons */
 .action-btn {
     background: none;
     border: none;
@@ -547,7 +539,7 @@ tr:hover {
     background-color: rgba(239, 68, 68, 0.1);
 }
 
-/* Animations */
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -564,7 +556,7 @@ tr:hover {
     }
 }
 
-/* Responsive Design */
+
 @media (max-width: 768px) {
     .sidebar {
         width: 200px;

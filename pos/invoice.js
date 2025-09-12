@@ -11,7 +11,7 @@ function searchInvoice() {
         return;
     }
 
-    // Show loading state
+    
     invoiceDisplay.innerHTML = `
         <div style="text-align: center; padding: 40px;">
             <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-color);"></i>
@@ -184,14 +184,14 @@ function processReturn(productName, quantity, unitPrice, invoiceNumber) {
     
     document.body.appendChild(returnModal);
     
-    // Update return amount when quantity changes
+  
     document.getElementById('returnQuantity').addEventListener('input', function() {
         const returnQty = parseInt(this.value) || 0;
         const returnAmount = returnQty * unitPrice;
         document.getElementById('returnAmount').textContent = returnAmount.toFixed(2);
     });
     
-    // Handle return form submission
+
     document.getElementById('returnForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -206,7 +206,7 @@ function processReturn(productName, quantity, unitPrice, invoiceNumber) {
             return_amount: parseInt(document.getElementById('returnQuantity').value) * unitPrice
         };
         
-        // Process the return
+       
         fetch('/api/process_return', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -217,7 +217,7 @@ function processReturn(productName, quantity, unitPrice, invoiceNumber) {
             if (result.success) {
                 showNotification('Return processed successfully!', 'success');
                 returnModal.remove();
-                // Refresh the invoice display
+              
                 searchInvoice();
             } else {
                 showNotification(result.message || 'Error processing return', 'error');
@@ -271,7 +271,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Add CSS for animations and return button
+
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {

@@ -25,7 +25,6 @@ body {
   position: relative;
 }
 
-/* Sidebar Styles */
 .sidebar {
   position: fixed;
   left: 0;
@@ -100,7 +99,6 @@ body {
   padding-top: 20px;
 }
 
-/* Main Content Styles */
 .top-bar {
     flex: 1;
     padding: 32px;
@@ -273,7 +271,6 @@ th {
 }
 
 
-/* Table Styles */
 .employee-table {
   overflow-x: auto;
   border-radius: 8px;
@@ -370,8 +367,6 @@ tr:hover {
   background: darkgray;
 }
 
-
-/* Action Buttons */
 .action-btn {
   background: none;
   border: none;
@@ -393,7 +388,6 @@ tr:hover {
   background-color: rgba(239, 68, 68, 0.1);
 }
 
-/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -410,7 +404,6 @@ tr:hover {
   }
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .sidebar {
       width: 200px;

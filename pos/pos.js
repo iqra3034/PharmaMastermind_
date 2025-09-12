@@ -3,7 +3,37 @@ let cart = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchProducts();
+
+    // Paid amount calculation
     document.getElementById("paidAmount").addEventListener("input", updateBillingSummary);
+
+    // Search bar functionality
+    document.getElementById("searchInput").addEventListener("keyup", function () {
+        const filter = this.value.toLowerCase();
+
+        // Filter products by name or product_id
+        const filteredProducts = products.filter(product =>
+            product.product_name.toLowerCase().includes(filter) ||
+            product.product_id.toString().includes(filter)
+        );
+
+        // Show only matched products
+        displayProducts(filteredProducts);
+    });
+
+    // Category filter
+    document.getElementById("categorySelect").addEventListener("change", function () {
+        const category = this.value;
+
+        if (category === "All Categories") {
+            displayProducts(products);
+        } else {
+            const filteredProducts = products.filter(product =>
+                product.category && product.category.toLowerCase() === category.toLowerCase()
+            );
+            displayProducts(filteredProducts);
+        }
+    });
 });
 
 // Helper function to show popup messages
@@ -187,3 +217,4 @@ async function saveOrder() {
 function newOrder() {
     clearCart();
 }
+

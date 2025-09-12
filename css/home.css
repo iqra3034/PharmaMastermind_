@@ -119,9 +119,9 @@ main {
 
 .login-cards {
     display: flex;
-    justify-content: center; /* center align */
-    gap: 2.5rem; /* space between cards */
-    flex-wrap: nowrap; /* ek hi line me rakhe */
+    justify-content: center;
+    gap: 2.5rem; 
+    flex-wrap: nowrap; 
     padding: 0.5rem;
 }
 
@@ -136,9 +136,9 @@ main {
     box-shadow: var(--shadow-sm);
     border: 1px solid rgba(0, 0, 0, 0.05);
 
-    /* Add these for equal size */
-    width: 250px;   /* sab cards ka same width */
-    height: 250px;  /* sab cards ka same height */
+    
+    width: 250px;   
+    height: 250px;  
     display: flex;
     flex-direction: column;
     justify-content: center;

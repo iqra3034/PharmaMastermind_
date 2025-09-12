@@ -839,6 +839,9 @@ def get_customer_ledger(customer_id):
         transactions = []
         running_balance = 0.0
         
+        transactions = []
+        running_balance = 0.0
+        
         for row in cur.fetchall():
             debit_amount = float(row[8]) if row[8] else 0.0
             credit_amount = float(row[7]) if row[7] else 0.0
@@ -846,6 +849,10 @@ def get_customer_ledger(customer_id):
             # Calculate running balance (Debit increases balance, Credit decreases)
             running_balance += debit_amount - credit_amount
             
+            # Prevent negative balance (set to zero if goes below 0)
+            if running_balance < 0:
+                running_balance = 0.0
+
             transaction = {
                 'date': row[0],
                 'inv_no': row[1],
@@ -860,18 +867,21 @@ def get_customer_ledger(customer_id):
                 'dr_cr': 'Dr' if running_balance >= 0 else 'Cr'
             }
             transactions.append(transaction)
+
+
         
         # Calculate summary
         total_debit = sum(t['debit_amount'] for t in transactions)
         total_credit = sum(t['credit_amount'] for t in transactions)
         
         summary = {
-            'opening_balance': 0.0,
-            'total_debit': total_debit,
-            'total_credit': total_credit,
-            'ending_balance': running_balance
-        }
-        
+    'opening_balance': 0.0,
+    'total_debit': total_debit,
+    'total_credit': total_credit,
+    'ending_balance': abs(running_balance),
+    'ending_type': 'Dr' if running_balance >= 0 else 'Cr'
+}
+
         cur.close()
         
         return jsonify({

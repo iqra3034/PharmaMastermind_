@@ -25,7 +25,6 @@ body {
   position: relative;
 }
 
-/* Sidebar Styles */
 .sidebar {
   position: fixed;
   left: 0;
@@ -100,7 +99,6 @@ body {
   padding-top: 20px;
 }
 
-/* Main Content Styles */
 .top-bar {
     flex: 1;
     padding: 32px;

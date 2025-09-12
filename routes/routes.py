@@ -122,8 +122,8 @@ def pos_returns():
 
 @routes.route('/logout')
 def logout():
-    session.clear()
-    return redirect(url_for('routes.signin'))
+    session.clear()   
+    return redirect('/')  
 
 
 @routes.route('/payment')

@@ -81,45 +81,6 @@ function setupNewEventListeners() {
     document.getElementById('addRestockProductsBtn').addEventListener('click', addRestockProductsToOrder);
 }
 
-async function addExpiryProductsToOrder() {
-    try {
-        const response = await fetch('/expiry_alerts');
-        const expiryData = await response.json();
-        
-        if (expiryData.error) {
-            throw new Error(expiryData.error);
-        }
-        
-        // Filter products expiring within 30 days
-        const urgentExpiry = expiryData.filter(product => product.time_to_expiry <= 30);
-        
-        if (urgentExpiry.length === 0) {
-            showNotification('No products expiring soon found!', 'info');
-            return;
-        }
-        
-        // Convert to order format
-        const orderProducts = urgentExpiry.map(product => ({
-            name: product.product_name,
-            price: product.cost_price, // Default price - you can modify this
-            quantity: 10 // Default quantity for expiry products
-        }));
-        
-        // Store in sessionStorage
-        sessionStorage.setItem('expiryProducts', JSON.stringify(orderProducts));
-        
-        showNotification(`${urgentExpiry.length} expiry products added to order cart!`, 'success');
-        
-        // Redirect to order page
-        setTimeout(() => {
-            window.location.href = '/order';
-        }, 1500);
-        
-    } catch (error) {
-        console.error('Error fetching expiry products:', error);
-        showNotification('Error loading expiry products', 'error');
-    }
-}
 
 
 function showNotification(message, type = 'info') {

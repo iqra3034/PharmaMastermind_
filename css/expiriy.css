@@ -23,7 +23,6 @@
     background-color: var(--background-light);
 }
 
-/* Sidebar Styles */
 .sidebar {
     position: fixed;
     left: 0;
@@ -100,7 +99,7 @@
     padding-top: 20px;
 }
 
-/* Main Content Styles */
+
 .main-content {
     flex: 1;
     padding: 32px;

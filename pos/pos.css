@@ -143,6 +143,7 @@ body {
     border: 1px solid #e2e8f0;
     color: #475569;
     font-weight: 500;
+
 }
 
 /* Enhanced Buttons */
@@ -225,6 +226,7 @@ body {
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1.5rem;
+    
 }
 
 /* Responsive Adjustments */
@@ -261,15 +263,15 @@ body {
 
 /* Success Toast */
 #popupMessage.success {
-    background-color: #28a745; /* green */
+    background-color: #28a745;
 }
 
-/* Error Toast */
+
 #popupMessage.error {
-    background-color: #dc3545; /* red */
+    background-color: #dc3545; 
 }
 
-/* Optional fade-in and slide effect */
+
 @keyframes slideFade {
     0% {
         transform: translateY(-20px);
