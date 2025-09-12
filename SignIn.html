@@ -33,6 +33,7 @@
             position: relative;
         }
 
+<<<<<<< HEAD
         .back-button {
             position: absolute;
             top: 20px;
@@ -52,6 +53,28 @@
             background-color: #108581;
             transform: scale(1.05);  
         }
+=======
+        /* ✅ Back Button CSS */
+        .back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 12px 22px;   /* 🔹 Button ko thoda bada kar diya */
+    background-color: #0cb8b2;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;   /* 🔹 Thoda rounded zyada */
+    font-size: 16px;      /* 🔹 Text bada aur readable */
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); /* 🔹 Thoda strong shadow */
+    transition: all 0.3s ease-in-out;
+}
+
+.back-button:hover {
+    background-color: #108581;
+    transform: scale(1.05);  /* 🔹 Hover par thoda zoom effect */
+}
+>>>>>>> f5dbcd8ecaa4b0e441a5bfcae84081fde3cd7418
 
 
         .form-section {
@@ -172,6 +195,10 @@
 <body>
     <div class="container">
 
+<<<<<<< HEAD
+=======
+        <!-- Back Button -->
+>>>>>>> f5dbcd8ecaa4b0e441a5bfcae84081fde3cd7418
         <a href="/" class="back-button">⬅ Back</a>
 
         <div class="form-section">
@@ -275,10 +302,17 @@
     passwordError.style.fontSize = "12px";
     passwordInput.insertAdjacentElement("afterend", passwordError);
 
+<<<<<<< HEAD
 
 emailInput.addEventListener("input", () => {
     const emailValue = emailInput.value.trim();
     const emailRegex = /^[^\s@]+@(gmail\.com|yahoo\.com)$/i; 
+=======
+    // Live validation for email
+emailInput.addEventListener("input", () => {
+    const emailValue = emailInput.value.trim();
+    const emailRegex = /^[^\s@]+@(gmail\.com|yahoo\.com)$/i;  //  sirf gmail aur yahoo allow
+>>>>>>> f5dbcd8ecaa4b0e441a5bfcae84081fde3cd7418
 
     if (!emailValue) {
         emailError.textContent = "Email is required.";
@@ -289,6 +323,10 @@ emailInput.addEventListener("input", () => {
     }
 });
 
+<<<<<<< HEAD
+=======
+    // Live validation for password
+>>>>>>> f5dbcd8ecaa4b0e441a5bfcae84081fde3cd7418
     passwordInput.addEventListener("input", () => {
         const passwordValue = passwordInput.value.trim();
         if (!passwordValue) {
