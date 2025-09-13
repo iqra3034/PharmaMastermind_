@@ -57,11 +57,8 @@ def signsup():
     first_name = data.get("firstName")
     last_name = data.get("lastName")
     role = data.get("role")  
-    password = data.get("password")
 
-    
-
-    # For customers: send email verification. For admin/employee: no email, only admin approval.
+    # For customers: send email verification. For admin/employee: no email, only approval.
     if role == 'customer':
         verification_code = email_service.generate_verification_code()
         code_expiry = datetime.now() + timedelta(minutes=10)
@@ -80,7 +77,7 @@ def signsup():
             cur.close()
             return jsonify({"success": False, "message": "Email already exists"}), 400
         
-        # Store user data temporarily; verification fields only used for customers
+        # Store user data temporarily
         cur.execute("""
             INSERT INTO pending_users (username, first_name, last_name, email, password, role, verification_code, code_expiry)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -94,9 +91,8 @@ def signsup():
         
         # Branch by role
         if role == 'customer':
-            # Send verification email for customer only
+            # Send verification email
             if email_service.send_verification_email(email, f"{first_name} {last_name}", verification_code):
-                print("✅ Verification email sent successfully.")
                 return jsonify({
                     "success": True, 
                     "message": "Verification email sent! Please check your email to complete registration.",
@@ -105,12 +101,22 @@ def signsup():
             else:
                 return jsonify({"success": False, "message": "Failed to send verification email"}), 500
         
-            # Admin/Employee: no email, just wait for admin approval
+        elif role == 'admin':
+            return jsonify({
+                "success": True,
+                "message": "Registration submitted! Waiting for owner approval.",
+                "email": email
+            }), 200
+        
+        elif role == 'employee':
             return jsonify({
                 "success": True,
                 "message": "Registration submitted! Waiting for admin approval.",
                 "email": email
             }), 200
+        
+        else:
+            return jsonify({"success": True, "message": "Signup successful!"}), 200
             
     except Exception as e:
         print("❌ Signup Error:", str(e))

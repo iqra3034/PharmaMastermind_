@@ -172,6 +172,7 @@
   </div>
 
   <style>
+  /* Popup container */
   .popup-message {
     position: fixed;
     top: 20px; 
@@ -187,16 +188,19 @@
     transition: opacity 0.3s ease-in-out;
   }
 
+  /* Error styling */
   .popup-error {
     background-color: #f44336; 
   }
 
+  /* Show animation */
   .popup-show {
     opacity: 1;
   }
 </style>
 
 <script>
+  // Get selected role from sessionStorage
   const signupRole = sessionStorage.getItem('signupRole');
   
   if (signupRole) {
@@ -235,18 +239,14 @@
     popup.textContent = message;
     document.body.appendChild(popup);
 
-    setTimeout(() => {
-      popup.classList.add("popup-show");
-    }, 0);
-
+    setTimeout(() => popup.classList.add("popup-show"), 0);
     setTimeout(() => {
       popup.classList.remove("popup-show");
       setTimeout(() => popup.remove(), 300);
-    }, 3000); // 3 seconds
+    }, 3000);
   }
 
   const nameRegex = /^[A-Za-z]+$/;
-  
   const emailRegex = /^[^\s@]+@(gmail\.com|yahoo\.com)$/;
   const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
 
@@ -345,8 +345,7 @@
         .then(data => {
           if (data.success) {
             if (formData.role === 'customer') {
-              showPopup(data.message); 
-             
+              showPopup(data.message);
               sessionStorage.setItem('verificationEmail', formData.email);
               sessionStorage.setItem('verificationName', `${formData.firstName} ${formData.lastName}`);
               setTimeout(() => {
@@ -354,7 +353,8 @@
                 window.location.href = "/verification";
               }, 3000);
             } else {
-              showPopup("Registration submitted! Waiting for owner approval.", "success");
+              // ✅ Use backend ka message instead of hardcoding
+              showPopup(data.message);
               setTimeout(() => {
                 sessionStorage.removeItem('signupRole');
                 window.location.href = "/signin";
@@ -371,6 +371,7 @@
     }
   });
 </script>
+
 
 
 </body>
