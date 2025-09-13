@@ -102,10 +102,7 @@ async function handleApproval(approvalId, action) {
     const modalTitle = document.getElementById('modalTitle');
     const modalMessage = document.getElementById('modalMessage');
 
-    modalTitle.textContent = action === 'approve' ? 'Approve Employee' : 'Reject Employee';
-    modalMessage.textContent = action === 'approve'
-        ? `Are you sure you want to approve ${approval.first_name} ${approval.last_name} as ${approval.role}?`
-        : `Are you sure you want to reject ${approval.first_name} ${approval.last_name}'s ${approval.role} request?`;
+   
 
     // Show modal
     modal.style.display = 'flex';

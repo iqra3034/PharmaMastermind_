@@ -352,7 +352,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <div>
                 <h2><i class="fas fa-user-check"></i> Pending User Approvals</h2>
-                <p style="color: #666; margin-top: 10px;">Review and approve new admin and employee registrations</p>
+                <p style="color: #666; margin-top: 10px;">Review and approve new admin registrations</p>
             </div>
             <button onclick="refreshApprovals()" style="background: var(--primary-color); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer;">
                 <i class="fas fa-sync-alt"></i> Refresh
@@ -378,11 +378,10 @@
     </main>
 
   
-<!-- Confirmation Modal -->
 <div id="confirmationModal" class="modal-overlay">
     <div class="modal-content">
         <h2 id="modalTitle">Approve Admin</h2>
-        <p id="modalMessage">Are you sure you want to approve this employee?</p>
+        <p id="modalMessage">Are you sure you want to approve this admin?</p>
         <div class="modal-buttons">
             <button id="okBtn" class="btn-ok">OK</button>
             <button id="cancelBtn" class="btn-cancel">Cancel</button>

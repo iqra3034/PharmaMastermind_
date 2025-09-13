@@ -865,16 +865,42 @@ def get_customer_ledger(customer_id):
 
 
 # Add new product
+@app.route('/api/products', methods=['GET'])
+def get_products():
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            SELECT product_id, product_name, brand, price, 
+                stock_quantity, category, expiry_date, image_path
+            FROM products
+            WHERE stock_quantity > 0
+            ORDER BY product_name
+
+        """)
+        rows = cur.fetchall()
+        column_names = [desc[0] for desc in cur.description]
+        cur.close()
+
+        
+        products = [dict(zip(column_names, row)) for row in rows]
+
+        return jsonify(products)
+    except Exception as err:
+        return jsonify({"error": f"MySQL Error: {str(err)}"}), 500
+
+
+# Add new product
 @app.route('/api/products', methods=['POST'])
 def add_product():
     try:
         data = request.form
         
+        # Handle image upload
         image_path = None
         if 'image' in request.files:
             image = request.files['image']
             if image.filename != '':
-           
+                # Save image to pictures folder
                 image_filename = f"product_{data['product_id']}_{image.filename}"
                 image_path = f"/pictures/{image_filename}"
                 image.save(f"pictures/{image_filename}")
@@ -909,6 +935,7 @@ def update_product(product_id):
     try:
         data = request.form
         
+        # Handle image upload
         image_path = None
         if 'image' in request.files:
             image = request.files['image']
@@ -919,6 +946,7 @@ def update_product(product_id):
         
         cur = mysql.connection.cursor()
         
+        # Build update query dynamically
         update_fields = []
         values = []
         
@@ -979,78 +1007,85 @@ def delete_product(product_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+from MySQLdb.cursors import DictCursor
 
-# Customer API endpoints
 @app.route('/api/customers', methods=['GET'])
 def get_customers():
     try:
-        cur = mysql.connection.cursor()
-        cur.execute("SELECT id, username, first_name, last_name, email, role FROM users")
-        rows = cur.fetchall()
-        column_names = [desc[0] for desc in cur.description]
+        cur = mysql.connection.cursor(DictCursor)   # ✅ DictCursor
+        cur.execute("""
+            SELECT id, first_name, last_name, email, username, role
+            FROM users
+            WHERE role = 'customer'
+        """)
+        customers = cur.fetchall()
         cur.close()
-        
-        customers = [dict(zip(column_names, row)) for row in rows]
-        return jsonify(customers)
+        return jsonify(customers), 200
     except Exception as e:
+        print("❌ Error in /api/customers:", str(e))
         return jsonify({"error": str(e)}), 500
 
 
+# 2. Get all orders
 @app.route('/api/customer-orders', methods=['GET'])
 def get_customer_orders():
     try:
-        cur = mysql.connection.cursor()
-        cur.execute("SELECT order_id, customer_id, total_amount, order_date, payment_status FROM orders WHERE customer_id IS NOT NULL")
-        rows = cur.fetchall()
-        column_names = [desc[0] for desc in cur.description]
+        cur = mysql.connection.cursor(DictCursor)   # ✅ DictCursor
+        cur.execute("""
+            SELECT order_id, customer_id, total_amount, order_date, payment_status
+            FROM orders
+            WHERE customer_id IS NOT NULL
+        """)
+        orders = cur.fetchall()
         cur.close()
-        
-        orders = [dict(zip(column_names, row)) for row in rows]
-        return jsonify(orders)
+        return jsonify(orders), 200
     except Exception as e:
+        print("❌ Error in /api/customer-orders:", str(e))
         return jsonify({"error": str(e)}), 500
 
 
+# 3. Get order details for single customer
 @app.route('/api/customer-order-details/<int:customer_id>', methods=['GET'])
 def get_customer_order_details(customer_id):
     try:
-        cur = mysql.connection.cursor()
-        cur.execute("""
-            SELECT o.order_id, o.total_amount, o.order_date,
-               oi.product_name, oi.quantity, oi.unit_price, o.payment_status
+        cur = mysql.connection.cursor(DictCursor)   # ✅ DictCursor
+        query = """
+            SELECT o.order_id, o.customer_id, o.order_date, o.total_amount, o.payment_status,
+                   oi.product_id, p.product_name, oi.quantity
             FROM orders o
             LEFT JOIN order_items oi ON o.order_id = oi.order_id
+            LEFT JOIN products p ON oi.product_id = p.product_id
             WHERE o.customer_id = %s
             ORDER BY o.order_date DESC
-        """, (customer_id,))
-        
+        """
+        cur.execute(query, (customer_id,))
         rows = cur.fetchall()
         cur.close()
-        
-        
+
+        # Group items under each order
         orders = {}
         for row in rows:
-            order_id = row[0]
-            if order_id not in orders:
-                orders[order_id] = {
-                    'order_id': order_id,
-                    'total_amount': row[1],
-                    'order_date': row[2],
-                    'payment_status': row[6],  
-                    'items': []
+            oid = row['order_id']
+            if oid not in orders:
+                orders[oid] = {
+                    "order_id": row['order_id'],
+                    "customer_id": row['customer_id'],
+                    "order_date": row['order_date'],
+                    "total_amount": row['total_amount'],
+                    "payment_status": row['payment_status'],
+                    "items": []
                 }
-            
-            if row[3]:  
-                orders[order_id]['items'].append({
-                    'product_name': row[3],
-                    'quantity': row[4],
-                    'unit_price': row[5]
+            if row['product_id']:
+                orders[oid]["items"].append({
+                    "product_id": row['product_id'],
+                    "product_name": row['product_name'],
+                    "quantity": row['quantity']
                 })
-        
-        return jsonify(list(orders.values()))
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
+        return jsonify(list(orders.values())), 200
+    except Exception as e:
+        print("❌ Error in /api/customer-order-details:", str(e))
+        return jsonify({"error": str(e)}), 500
 
 #invetory order for pharmacy
 

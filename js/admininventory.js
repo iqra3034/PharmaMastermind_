@@ -10,7 +10,7 @@ function fetchInventory() {
         });
 }
 
-
+// Display inventory cards
 function displayInventory(inventory) {
     const inventoryGrid = document.getElementById('inventoryGrid');
     inventoryGrid.innerHTML = ''; // Clear previous content
@@ -81,7 +81,85 @@ function setupNewEventListeners() {
     document.getElementById('addRestockProductsBtn').addEventListener('click', addRestockProductsToOrder);
 }
 
+async function addExpiryProductsToOrder() {
+    try {
+        const response = await fetch('/expiry_alerts');
+        const expiryData = await response.json();
+        
+        if (expiryData.error) {
+            throw new Error(expiryData.error);
+        }
+        
+        // Filter products expiring within 30 days
+        const urgentExpiry = expiryData.filter(product => product.time_to_expiry <= 30);
+        
+        if (urgentExpiry.length === 0) {
+            showNotification('No products expiring soon found!', 'info');
+            return;
+        }
+        
+        // Convert to order format
+        const orderProducts = urgentExpiry.map(product => ({
+            name: product.product_name,
+            price: 100, // Default price - you can modify this
+            quantity: 10 // Default quantity for expiry products
+        }));
+        
+        // Store in sessionStorage
+        sessionStorage.setItem('expiryProducts', JSON.stringify(orderProducts));
+        
+        showNotification(`${urgentExpiry.length} expiry products added to order cart!`, 'success');
+        
+        // Redirect to order page
+        setTimeout(() => {
+            window.location.href = '/order';
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Error fetching expiry products:', error);
+        showNotification('Error loading expiry products', 'error');
+    }
+}
 
+async function addRestockProductsToOrder() {
+    try {
+        const response = await fetch('/api/predict_restocks');
+        const restockData = await response.json();
+        
+        if (restockData.error) {
+            throw new Error(restockData.error);
+        }
+        
+        // Filter urgent restock products (within 14 days)
+        const urgentRestock = restockData.filter(product => product.predicted_days_until_restock <= 14);
+        
+        if (urgentRestock.length === 0) {
+            showNotification('No urgent restock products found!', 'info');
+            return;
+        }
+        
+        // Convert to order format
+        const orderProducts = urgentRestock.map(product => ({
+            name: product.product_name,
+            price: 150, // Default price for restock
+            quantity: product.recommended_quantity
+        }));
+        
+        // Store in sessionStorage
+        sessionStorage.setItem('restockProducts', JSON.stringify(orderProducts));
+        
+        showNotification(`${urgentRestock.length} restock products added to order cart!`, 'success');
+        
+        // Redirect to order page
+        setTimeout(() => {
+            window.location.href = '/order';
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Error fetching restock products:', error);
+        showNotification('Error loading restock products', 'error');
+    }
+}
 
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
