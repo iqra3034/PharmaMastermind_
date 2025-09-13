@@ -169,7 +169,7 @@ function saveEmployee() {
         : "/employees/add";
     const method = editMode ? "PUT" : "POST";
 
-    console.log('Sending employee data:', employee); // Debug log
+    console.log('Sending employee data:', employee); 
 
     fetch(url, {
         method: method,
@@ -177,11 +177,11 @@ function saveEmployee() {
         body: JSON.stringify(employee)
     })
     .then(res => {
-        console.log('Response status:', res.status); // Debug log
+        console.log('Response status:', res.status); 
         return res.json();
     })
     .then(data => {
-        console.log('Response data:', data); // Debug log
+        console.log('Response data:', data); 
         if (data.status === 'success') {
             closeModal();
             fetchEmployees();
@@ -289,17 +289,17 @@ function showLoginCredentials(employeeId, email) {
 function confirmDelete() {
     if (!deleteEmployeeId) return;
 
-    console.log('Deleting employee:', deleteEmployeeId); // Debug log
+    console.log('Deleting employee:', deleteEmployeeId); 
 
     fetch(`/api/employees/${deleteEmployeeId}`, {
         method: "DELETE"
     })
     .then(res => {
-        console.log('Delete response status:', res.status); // Debug log
+        console.log('Delete response status:', res.status); 
         return res.json();
     })
     .then(data => {
-        console.log('Delete response data:', data); // Debug log
+        console.log('Delete response data:', data);
         if (data.status === 'success') {
             closeDeleteModal();
             fetchEmployees();

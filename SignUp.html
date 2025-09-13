@@ -172,7 +172,6 @@
   </div>
 
   <style>
-  /* Popup container */
   .popup-message {
     position: fixed;
     top: 20px; 
@@ -188,19 +187,17 @@
     transition: opacity 0.3s ease-in-out;
   }
 
-  /* Error styling */
   .popup-error {
     background-color: #f44336; 
   }
 
-  /* Show animation */
   .popup-show {
     opacity: 1;
   }
 </style>
 
 <script>
-  // Get selected role from sessionStorage
+  
   const signupRole = sessionStorage.getItem('signupRole');
   
   if (signupRole) {
@@ -353,7 +350,7 @@
                 window.location.href = "/verification";
               }, 3000);
             } else {
-              // ✅ Use backend ka message instead of hardcoding
+             
               showPopup(data.message);
               setTimeout(() => {
                 sessionStorage.removeItem('signupRole');
@@ -371,9 +368,6 @@
     }
   });
 </script>
-
-
-
 </body>
 
 </html>

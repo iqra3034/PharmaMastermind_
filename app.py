@@ -14,7 +14,7 @@ import stripe
 import uuid
 from email_service import EmailService
 
-# Import DSS module
+
 from dss import init_dss_routes
 
 
@@ -41,10 +41,8 @@ mysql = MySQL(app)
 # Initialize email service
 email_service = EmailService()
 
-# Register main routes
 app.register_blueprint(routes)
 
-# Initialize and register DSS routes properly
 init_dss_routes(app, mysql)
 
 
@@ -58,7 +56,6 @@ def signsup():
     last_name = data.get("lastName")
     role = data.get("role")  
 
-    # For customers: send email verification. For admin/employee: no email, only approval.
     if role == 'customer':
         verification_code = email_service.generate_verification_code()
         code_expiry = datetime.now() + timedelta(minutes=10)
@@ -70,14 +67,12 @@ def signsup():
 
     try:
         cur = mysql.connection.cursor()
-        
-        # Check if email already exists
+       
         cur.execute("SELECT email FROM users WHERE email = %s", (email,))
         if cur.fetchone():
             cur.close()
             return jsonify({"success": False, "message": "Email already exists"}), 400
         
-        # Store user data temporarily
         cur.execute("""
             INSERT INTO pending_users (username, first_name, last_name, email, password, role, verification_code, code_expiry)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -91,7 +86,7 @@ def signsup():
         
         # Branch by role
         if role == 'customer':
-            # Send verification email
+            
             if email_service.send_verification_email(email, f"{first_name} {last_name}", verification_code):
                 return jsonify({
                     "success": True, 
@@ -132,7 +127,6 @@ def verify_email():
     try:
         cur = mysql.connection.cursor(DictCursor)
         
-        # Check verification code for customers only; tolerate NULL expiry
         cur.execute(
             """
             SELECT id, username, first_name, last_name, email, password, role
@@ -148,7 +142,6 @@ def verify_email():
         pending_user = cur.fetchone()
         
         if pending_user:
-            # Move user to main users table
             cur2 = mysql.connection.cursor()
             cur2.execute(
                 """
@@ -165,7 +158,6 @@ def verify_email():
                 )
             )
             
-            # Remove from pending users
             cur2.execute("DELETE FROM pending_users WHERE id = %s", (pending_user['id'],))
             
             mysql.connection.commit()
@@ -186,12 +178,11 @@ def verify_email():
 @app.route('/api/pending-approvals', methods=['GET'])
 def get_pending_approvals():
     try:
-        # Only owner can fetch pending approvals
         if session.get('role') != 'owner':
             return jsonify({"error": "Unauthorized"}), 403
 
         cur = mysql.connection.cursor()
-        # Pending requests for roles that require owner approval
+       
         cur.execute(
             """
             SELECT id, username, first_name, last_name, email, role, code_expiry
@@ -205,7 +196,7 @@ def get_pending_approvals():
 
         approvals = []
         for row in rows:
-            # row indices based on existing usage in verify-email route
+     
             pending_id = row[0]
             username = row[1]
             first_name = row[2]
@@ -214,7 +205,6 @@ def get_pending_approvals():
             role = row[5]
             code_expiry = row[6]
 
-            # Approximate created_at as 10 minutes before code_expiry (how it was generated at signup)
             try:
                 created_at = (code_expiry - timedelta(minutes=10)) if code_expiry else datetime.now()
             except Exception:
@@ -238,7 +228,6 @@ def get_pending_approvals():
 @app.route('/api/handle-approval', methods=['POST'])
 def handle_approval():
     try:
-        # Only owner can approve/reject
         if session.get('role') != 'owner':
             return jsonify({"success": False, "message": "Unauthorized"}), 403
 
@@ -251,21 +240,17 @@ def handle_approval():
 
         cur = mysql.connection.cursor()
 
-        # Fetch the pending user
         cur.execute("SELECT * FROM pending_users WHERE id = %s", (approval_id,))
         pending_user = cur.fetchone()
         if not pending_user:
             cur.close()
             return jsonify({"success": False, "message": "Pending request not found"}), 404
 
-        # Column order inferred from existing verify-email endpoint
-        # 0:id, 1:username, 2:first_name, 3:last_name, 4:email, 5:password, 6:role
         if action == 'approve':
-            # Owner should only approve admin role requests
             if pending_user[6] != 'admin':
                 cur.close()
                 return jsonify({"success": False, "message": "Only admin approvals are handled by owner"}), 400
-            # Insert into users
+            
             cur.execute(
                 """
                 INSERT INTO users (username, first_name, last_name, email, password, role)
@@ -274,7 +259,6 @@ def handle_approval():
                 (pending_user[1], pending_user[2], pending_user[3], pending_user[4], pending_user[5], pending_user[6])
             )
 
-        # In both approve and reject, remove from pending_users
         cur.execute("DELETE FROM pending_users WHERE id = %s", (approval_id,))
 
         mysql.connection.commit()
@@ -347,7 +331,6 @@ def admin_handle_approval():
             cur.close()
             return jsonify({"success": False, "message": "Pending request not found"}), 404
 
-        # Ensure this endpoint only handles employee requests
         if pending_user[6] != 'employee':
             cur.close()
             return jsonify({"success": False, "message": "Only employee approvals are handled by admin"}), 400
@@ -378,16 +361,14 @@ def resend_verification():
     try:
         cur = mysql.connection.cursor()
         
-        # Check if user exists in pending_users
         cur.execute("SELECT * FROM pending_users WHERE email = %s", (email,))
         pending_user = cur.fetchone()
         
         if pending_user:
-            # Generate new verification code
+        
             verification_code = email_service.generate_verification_code()
             code_expiry = datetime.now() + timedelta(minutes=10)
             
-            # Update verification code
             cur.execute("""
                 UPDATE pending_users 
                 SET verification_code = %s, code_expiry = %s 
@@ -395,8 +376,7 @@ def resend_verification():
             """, (verification_code, code_expiry, email))
             mysql.connection.commit()
             
-            # Send new verification email
-            user_name = f"{pending_user[2]} {pending_user[3]}"  # first_name last_name
+            user_name = f"{pending_user[2]} {pending_user[3]}"  
             if email_service.send_verification_email(email, user_name, verification_code):
                 cur.close()
                 return jsonify({"success": True, "message": "Verification code sent again!"})
@@ -454,18 +434,15 @@ def forgot_password():
     try:
         cur = mysql.connection.cursor()
         
-        # Check if email exists in users table
         cur.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cur.fetchone()
         if not user:
             cur.close()
             return jsonify({"success": False, "message": "Email not registered"}), 404
 
-        # Generate reset code
         reset_code = email_service.generate_verification_code()
         code_expiry = datetime.now() + timedelta(minutes=10)
 
-        # Insert/Update password_resets table
         cur.execute("""
             INSERT INTO password_resets (email, reset_code, code_expiry)
             VALUES (%s, %s, %s)
@@ -475,7 +452,6 @@ def forgot_password():
         """, (email, reset_code, code_expiry))
         mysql.connection.commit()
 
-        # Send reset email
         if email_service.send_password_reset_email(email, user[2] + " " + user[3], reset_code):
             cur.close()
             return jsonify({"success": True, "message": "Password reset code sent to email!"}), 200
@@ -487,8 +463,6 @@ def forgot_password():
         print("❌ Forgot Password Error:", str(e))
         return jsonify({"success": False, "message": str(e)}), 500
 
-
-# Verify reset code and update password
 @app.route("/reset-password", methods=["POST"])
 def reset_password():
     data = request.get_json()
@@ -499,7 +473,6 @@ def reset_password():
     try:
         cur = mysql.connection.cursor()
 
-        # Check if code is valid
         cur.execute("""
             SELECT * FROM password_resets 
             WHERE email = %s AND reset_code = %s AND code_expiry > NOW()
@@ -510,13 +483,10 @@ def reset_password():
             cur.close()
             return jsonify({"success": False, "message": "Invalid or expired reset code"}), 400
 
-        # Hash new password
         hashed_pw = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-        # Update user's password
         cur.execute("UPDATE users SET password = %s WHERE email = %s", (hashed_pw, email))
 
-        # Remove reset entry
         cur.execute("DELETE FROM password_resets WHERE email = %s", (email,))
         
         mysql.connection.commit()
@@ -527,8 +497,6 @@ def reset_password():
     except Exception as e:
         print("❌ Reset Password Error:", str(e))
         return jsonify({"success": False, "message": str(e)}), 500
-
-
 
 
 
@@ -852,10 +820,8 @@ def get_customer_ledger(customer_id):
             debit_amount = float(row[8]) if row[8] else 0.0
             credit_amount = float(row[7]) if row[7] else 0.0
             
-            # Calculate running balance (Debit increases balance, Credit decreases)
             running_balance += debit_amount - credit_amount
             
-            # Prevent negative balance (set to zero if goes below 0)
             if running_balance < 0:
                 running_balance = 0.0
 
@@ -875,8 +841,6 @@ def get_customer_ledger(customer_id):
             transactions.append(transaction)
 
 
-        
-        # Calculate summary
         total_debit = sum(t['debit_amount'] for t in transactions)
         total_credit = sum(t['credit_amount'] for t in transactions)
         
@@ -906,12 +870,11 @@ def add_product():
     try:
         data = request.form
         
-        # Handle image upload
         image_path = None
         if 'image' in request.files:
             image = request.files['image']
             if image.filename != '':
-                # Save image to pictures folder
+           
                 image_filename = f"product_{data['product_id']}_{image.filename}"
                 image_path = f"/pictures/{image_filename}"
                 image.save(f"pictures/{image_filename}")
@@ -946,7 +909,6 @@ def update_product(product_id):
     try:
         data = request.form
         
-        # Handle image upload
         image_path = None
         if 'image' in request.files:
             image = request.files['image']
@@ -957,7 +919,6 @@ def update_product(product_id):
         
         cur = mysql.connection.cursor()
         
-        # Build update query dynamically
         update_fields = []
         values = []
         
@@ -1066,7 +1027,7 @@ def get_customer_order_details(customer_id):
         rows = cur.fetchall()
         cur.close()
         
-        # Group items by order
+        
         orders = {}
         for row in rows:
             order_id = row[0]
@@ -1079,7 +1040,7 @@ def get_customer_order_details(customer_id):
                     'items': []
                 }
             
-            if row[3]:  # If there are items
+            if row[3]:  
                 orders[order_id]['items'].append({
                     'product_name': row[3],
                     'quantity': row[4],
@@ -1213,7 +1174,7 @@ def generate_pharmacy_order_pdf(order_id, supplier_name, expected_delivery_date,
 def create_payment_intent():
     try:
         data = request.json
-        amount = data.get('amount')  # Amount in cents
+        amount = data.get('amount')  
         currency = data.get('currency', 'pkr')
         cart = data.get('cart', [])
 
@@ -1292,7 +1253,6 @@ def save_customer_order():
     try:
         cur = mysql.connection.cursor()
         
-        # Insert order with payment details
         cur.execute("""
             INSERT INTO orders (customer_id, order_date, total_amount, paid_amount, change_amount, 
                               payment_method, payment_intent_id, card_holder, card_last_four)
@@ -1316,14 +1276,12 @@ def save_customer_order():
                 item['price'] * item['quantity']
             ))
             
-            # Update product stock
             cur.execute("""
                 UPDATE products 
                 SET stock_quantity = stock_quantity - %s 
                 WHERE product_id = %s AND stock_quantity >= %s
             """, (item['quantity'], item['product_id'], item['quantity']))
             
-            # Check if stock update was successful
             if cur.rowcount == 0:
                 mysql.connection.rollback()
                 cur.close()
@@ -1360,7 +1318,6 @@ def generate_customer_receipt_pdf(order_id, cart, total_amount, paid_amount, cha
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    # Pharmacy Header
     pdf.set_font("Arial", "B", 18)
     pdf.set_text_color(19, 139, 168)
     pdf.cell(0, 12, "PHARMA MASTERMIND", ln=True, align="C")
@@ -1373,12 +1330,12 @@ def generate_customer_receipt_pdf(order_id, cart, total_amount, paid_amount, cha
     pdf.cell(0, 6, "Tel: 0321-1234567", ln=True, align="C")
     pdf.ln(5)
     
-    # Separator line
+    
     pdf.set_draw_color(19, 139, 168)
     pdf.line(20, pdf.get_y(), 190, pdf.get_y())
     pdf.ln(8)
 
-    # Receipt Info
+    # Receipt 
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 8, f"CUSTOMER RECEIPT", ln=True, align="C")
     pdf.ln(3)
@@ -1430,7 +1387,7 @@ def generate_customer_receipt_pdf(order_id, cart, total_amount, paid_amount, cha
     pdf.set_font("Arial", "", 9)
     pdf.cell(50, 6, f"Paid: Rs. {paid_amount:.2f}", ln=True)
 
-    # Payment method info
+    # Payment method 
     pdf.ln(8)
     pdf.set_font("Arial", "", 9)
     pdf.cell(0, 6, f"Payment Method: Credit/Debit Card (****{card_last_four})", ln=True, align="C")
@@ -1463,8 +1420,6 @@ def download_customer_receipt(filename):
 
 
 #POS
-
-
 @app.route('/api/save_order', methods=['POST'])
 def save_order():
     data = request.json
@@ -1501,12 +1456,12 @@ def save_order():
         mysql.connection.commit()
         cur.close()
 
-        # === Generate PDF Receipt ===
+        # = Generate PDF Receipt =
         os.makedirs("receipts", exist_ok=True)
         pdf = FPDF()
         pdf.add_page()
 
-        # Pharmacy Header
+        
         pdf.set_font("Arial", "B", 16)
         pdf.cell(190, 10, "DOGAR PHARMACY", ln=True, align="C")
 
@@ -1531,7 +1486,7 @@ def save_order():
         pdf.cell(60, 8, "Price", border=1, align="C")
         pdf.ln()
 
-        # Table Items
+        # Items
         pdf.set_font("Arial", "", 11)
         for item in cart:
             quantity = str(item['quantity'])
@@ -1542,7 +1497,6 @@ def save_order():
             pdf.cell(60, 8, price, border=1, align="R")
             pdf.ln()
 
-        # Summary
         pdf.ln(4)
         pdf.set_font("Arial", "", 11)
         pdf.cell(190, 8, f"Total: {total_amount:.2f}", ln=True, align="R")
@@ -1611,7 +1565,6 @@ def process_return():
         
         cur = mysql.connection.cursor()
         
-        # Insert return record
         cur.execute("""
             INSERT INTO returns (invoice_number, product_name, original_quantity, 
                                return_quantity, unit_price, return_amount, return_reason, 
@@ -1629,7 +1582,6 @@ def process_return():
             session.get('user_id', 'system')
         ))
         
-        # Update product stock (add returned quantity back)
         cur.execute("""
             UPDATE products 
             SET stock_quantity = stock_quantity + %s 
@@ -1658,11 +1610,9 @@ def save_auto_order():
         
         cur = mysql.connection.cursor()
         
-        # Calculate totals
         total_items = len(predictions)
         estimated_cost = sum(pred.get('estimated_cost', 0) for pred in predictions)
         
-        # Insert auto generated order
         cur.execute("""
             INSERT INTO auto_generated_order_list 
             (generation_date, processed_status, total_items, estimated_cost)
@@ -1671,7 +1621,6 @@ def save_auto_order():
         
         auto_order_id = cur.lastrowid
         
-        # Insert auto order items
         for prediction in predictions:
             cur.execute("""
                 INSERT INTO auto_order_items 
@@ -1680,7 +1629,7 @@ def save_auto_order():
             """, (
                 auto_order_id,
                 prediction.get('product_id'),
-                prediction.get('prediction_id', auto_order_id),  # Use auto_order_id as fallback
+                prediction.get('prediction_id', auto_order_id), 
                 prediction.get('recommended_quantity', 0)
             ))
         
@@ -1701,12 +1650,11 @@ def save_auto_order():
 
 
 # Get all employees
-
 @app.route('/employees/add', methods=['POST'])
 def add_employee():
     data = request.get_json()
     try:
-        print("Received data:", data)  # Debug print
+        print("Received data:", data)  
         cursor = mysql.connection.cursor()
         cursor.execute("""
             INSERT INTO employees 
@@ -1714,7 +1662,7 @@ def add_employee():
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             data['id'], data['name'], data['email'], data['phone'],
-            data['cnic'], data['emergency_contact'],  # 🛠 Fix: mapping this correctly
+            data['cnic'], data['emergency_contact'],  
             data['role'], data['salary']
         ))
         mysql.connection.commit()
