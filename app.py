@@ -122,7 +122,6 @@ def signsup():
         print("❌ Signup Error:", str(e))
         return jsonify({"success": False, "message": f"An error occurred: {str(e)}"}), 400
 
-
 @app.route("/verify-email", methods=["POST"])
 def verify_email():
     data = request.get_json()
@@ -1732,21 +1731,43 @@ def add_employee():
     data = request.get_json()
     try:
         print("Received data:", data)  # Debug print
+        
+        # Generate a default password for employee login
+        default_password = "employee123"  # You can make this configurable
+        hashed_password = bcrypt.hashpw(default_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
         cursor = mysql.connection.cursor()
+        
+        # First, insert into employees table
         cursor.execute("""
             INSERT INTO employees 
             (employee_id, name, email, phone, cnic, emergency, role, salary) 
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             data['id'], data['name'], data['email'], data['phone'],
-            data['cnic'], data['emergency_contact'],  # 🛠 Fix: mapping this correctly
+            data['cnic'], data['emergency_contact'],
             data['role'], data['salary']
         ))
+        
+        # Also insert into users table for login capability
+        cursor.execute("""
+            INSERT INTO users (username, first_name, last_name, email, password, role)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            data['id'],  # username = employee_id
+            data['name'].split()[0] if ' ' in data['name'] else data['name'],  # first_name
+            data['name'].split()[-1] if ' ' in data['name'] else '',  # last_name
+            data['email'],
+            hashed_password,
+            'employee'  # role in users table
+        ))
+        
         mysql.connection.commit()
         cursor.close()
-        return jsonify({'status': 'success'}), 200
+        return jsonify({'status': 'success', 'message': 'Employee added successfully with login credentials'}), 200
     except Exception as e:
         print("Error:", e)
+        mysql.connection.rollback()
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
@@ -1770,6 +1791,8 @@ def update_employee(emp_id):
     try:
         data = request.json
         cur = mysql.connection.cursor()
+        
+        # Update employees table
         query = '''
             UPDATE employees
             SET name=%s, email=%s, phone=%s, cnic=%s,
@@ -1781,13 +1804,26 @@ def update_employee(emp_id):
             data['emergency_contact'], data['role'], data['salary'], emp_id
         )
         cur.execute(query, values)
+        
+        # Also update users table for login capability
+        cur.execute('''
+            UPDATE users
+            SET first_name=%s, last_name=%s, email=%s
+            WHERE username=%s AND role='employee'
+        ''', (
+            data['name'].split()[0] if ' ' in data['name'] else data['name'],
+            data['name'].split()[-1] if ' ' in data['name'] else '',
+            data['email'],
+            emp_id
+        ))
+        
         mysql.connection.commit()
         cur.close()
-        return jsonify({'message': 'Employee updated successfully'})
+        return jsonify({'status': 'success', 'message': 'Employee updated successfully'})
     except Exception as e:
         print("Update error:", e)
-        return jsonify({'error': str(e)}), 500
-
+        mysql.connection.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 # Delete employee
@@ -1795,13 +1831,20 @@ def update_employee(emp_id):
 def delete_employee(emp_id):
     try:
         cur = mysql.connection.cursor()
+        
+        # Delete from employees table
         cur.execute("DELETE FROM employees WHERE employee_id = %s", (emp_id,))
+        
+        # Also delete from users table
+        cur.execute("DELETE FROM users WHERE username = %s AND role = 'employee'", (emp_id,))
+        
         mysql.connection.commit()
         cur.close()
-        return jsonify({'message': 'Employee deleted successfully'})
+        return jsonify({'status': 'success', 'message': 'Employee deleted successfully'})
     except Exception as e:
         print("Delete error:", e)
-        return jsonify({'error': str(e)}), 500
+        mysql.connection.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 if __name__ == "__main__":

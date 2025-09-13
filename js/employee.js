@@ -78,6 +78,9 @@ function displayEmployees(employeeList) {
                 <button class="action-btn delete-btn" onclick="openDeleteModal('${emp.employee_id}')" title="Delete Employee">
                     <i class="fas fa-trash"></i>
                 </button>
+                <button class="action-btn info-btn" onclick="showLoginCredentials('${emp.employee_id}', '${emp.email}')" title="Show Login Credentials">
+                    <i class="fas fa-key"></i>
+                </button>
             </td>
         `;
         tableBody.appendChild(row);
@@ -167,18 +170,24 @@ function saveEmployee() {
         : "/employees/add";
     const method = editMode ? "PUT" : "POST";
 
+    console.log('Sending employee data:', employee); // Debug log
+
     fetch(url, {
         method: method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(employee)
     })
-    .then(res => res.json())
+    .then(res => {
+        console.log('Response status:', res.status); // Debug log
+        return res.json();
+    })
     .then(data => {
+        console.log('Response data:', data); // Debug log
         if (data.status === 'success') {
             closeModal();
             fetchEmployees();
             showNotification(
-                editMode ? 'Employee updated successfully!' : 'Employee added successfully!',
+                editMode ? 'Employee updated successfully!' : 'Employee added successfully with login credentials!',
                 'success'
             );
         } else {
@@ -239,17 +248,66 @@ function editEmployee(id) {
     }
 }
 
+function showLoginCredentials(employeeId, email) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Employee Login Credentials</h3>
+                <span class="close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h4 style="color: #495057; margin-bottom: 15px;">Login Information:</h4>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Username:</strong> <span style="color: #007bff;">${employeeId}</span>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Email:</strong> <span style="color: #007bff;">${email}</span>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Password:</strong> <span style="color: #28a745;">employee123</span>
+                    </div>
+                    <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
+                        <i class="fas fa-info-circle" style="color: #856404;"></i>
+                        <span style="color: #856404; margin-left: 8px;">
+                            Employee can login using these credentials. Password can be changed after first login.
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="this.parentElement.parentElement.parentElement.remove()">Close</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+}
+
 function confirmDelete() {
     if (!deleteEmployeeId) return;
+
+    console.log('Deleting employee:', deleteEmployeeId); // Debug log
 
     fetch(`/api/employees/${deleteEmployeeId}`, {
         method: "DELETE"
     })
-    .then(res => res.json())
+    .then(res => {
+        console.log('Delete response status:', res.status); // Debug log
+        return res.json();
+    })
     .then(data => {
-        closeDeleteModal();
-        fetchEmployees();
-        showNotification('Employee deleted successfully!', 'success');
+        console.log('Delete response data:', data); // Debug log
+        if (data.status === 'success') {
+            closeDeleteModal();
+            fetchEmployees();
+            showNotification('Employee deleted successfully!', 'success');
+        } else {
+            showNotification(data.message || 'Error deleting employee', 'error');
+        }
     })
     .catch(error => {
         console.error('Error deleting employee:', error);
