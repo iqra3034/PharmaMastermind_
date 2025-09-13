@@ -353,8 +353,12 @@
                 window.location.href = "/verification";
               }, 3000);
             } else {
+<<<<<<< HEAD
+              showPopup("Registration submitted! Waiting for Approval.", "success");
+=======
               // ✅ Use backend ka message instead of hardcoding
               showPopup(data.message);
+>>>>>>> 06c91f978b5a0f256f601820e8b1103c5db3c483
               setTimeout(() => {
                 sessionStorage.removeItem('signupRole');
                 window.location.href = "/signin";

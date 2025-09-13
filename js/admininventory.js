@@ -10,7 +10,7 @@ function fetchInventory() {
         });
 }
 
-// Display inventory cards
+
 function displayInventory(inventory) {
     const inventoryGrid = document.getElementById('inventoryGrid');
     inventoryGrid.innerHTML = ''; // Clear previous content

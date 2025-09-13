@@ -93,6 +93,10 @@ def signsup():
         if role == 'customer':
             # Send verification email
             if email_service.send_verification_email(email, f"{first_name} {last_name}", verification_code):
+<<<<<<< HEAD
+                print(" Verification email sent successfully.")
+=======
+>>>>>>> 06c91f978b5a0f256f601820e8b1103c5db3c483
                 return jsonify({
                     "success": True, 
                     "message": "Verification email sent! Please check your email to complete registration.",
@@ -111,7 +115,7 @@ def signsup():
         elif role == 'employee':
             return jsonify({
                 "success": True,
-                "message": "Registration submitted! Waiting for admin approval.",
+                "message": "Registration submitted! Waiting for  approval.",
                 "email": email
             }), 200
         

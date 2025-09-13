@@ -15,13 +15,12 @@ function setupEventListeners() {
         saveEmployee();
     });
 
-    // Search functionality
     const searchInput = document.getElementById("searchEmployees");
     searchInput.addEventListener("input", function(e) {
         filterEmployees();
     });
 
-    // Filter functionality
+    
     const sortBy = document.getElementById("sortBy");
     sortBy.addEventListener("change", filterEmployees);
 }
@@ -106,7 +105,7 @@ function filterEmployees() {
         return matchesSearch;
     });
 
-    // Sort employees
+    
     filteredEmployees.sort((a, b) => {
         switch(sortBy) {
             case 'name':
@@ -156,11 +155,11 @@ function saveEmployee() {
         phone: document.getElementById("phone").value.trim(),
         cnic: document.getElementById("cnic").value.trim(),
         emergency_contact: document.getElementById("emergency").value.trim(),
-        role: "Employee", // Fixed role
+        role: "Employee", 
         salary: document.getElementById("salary").value.trim()
     };
 
-    // Validation
+    
     if (!validateEmployee(employee)) {
         return;
     }
@@ -201,26 +200,26 @@ function saveEmployee() {
 }
 
 function validateEmployee(employee) {
-    // Check if employee ID already exists (for new employees)
+    
     if (!editMode && employees.some(emp => emp.employee_id === employee.id)) {
         showNotification('Employee ID already exists', 'error');
         return false;
     }
 
-    // Check if email already exists
+    
     const existingEmail = employees.find(emp => emp.email === employee.email);
     if (existingEmail && (!editMode || existingEmail.employee_id !== editEmployeeId)) {
         showNotification('Email already exists', 'error');
         return false;
     }
 
-    // Validate CNIC format (basic validation)
+    
     if (!/^\d{5}-\d{7}-\d{1}$/.test(employee.cnic)) {
         showNotification('CNIC format should be: 12345-1234567-1', 'error');
         return false;
     }
 
-    // Validate phone number
+   
     if (!/^\d{11}$/.test(employee.phone.replace(/[-\s]/g, ''))) {
         showNotification('Phone number should be 11 digits', 'error');
         return false;
@@ -325,7 +324,7 @@ function showNotification(message, type = 'info') {
         </div>
     `;
 
-    // Add notification styles if not already added
+    
     if (!document.getElementById('notification-styles')) {
         const style = document.createElement('style');
         style.id = 'notification-styles';
@@ -369,7 +368,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Close modals when clicking outside
+
 window.onclick = function (event) {
     const employeeModal = document.getElementById("employeeModal");
     const deleteModal = document.getElementById("deleteModal");

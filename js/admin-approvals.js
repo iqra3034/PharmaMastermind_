@@ -81,7 +81,7 @@ function updateStatistics() {
     document.getElementById('totalPending').textContent = totalPending;
 }
 
-// Open modal popup 
+
 function openApprovalPopup(approvalId, action) {
     const approval = pendingApprovals.find(a => a.id === approvalId);
     if (!approval) return;
@@ -99,7 +99,7 @@ function openApprovalPopup(approvalId, action) {
     document.getElementById("popupModal").style.display = "flex";
 }
 
-// Confirm action from popup
+
 async function confirmApproval() {
     if (!currentApprovalId || !currentAction) return;
 
@@ -125,7 +125,6 @@ async function confirmApproval() {
     closePopup();
 }
 
-// Close popup
 function closePopup() {
     document.getElementById("popupModal").style.display = "none";
     currentApprovalId = null;
@@ -174,7 +173,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-    // Show popup 
+    
     function showPopup(title, message) {
       document.getElementById("popupTitle").innerText = title;
       document.getElementById("popupMessage").innerText = message;
