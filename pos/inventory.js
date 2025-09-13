@@ -7,22 +7,21 @@ document.addEventListener("DOMContentLoaded", () => {
 let products = [];
 
 function setupEventListeners() {
-    // Search functionality
+   
     document.getElementById('searchInput').addEventListener('input', filterProducts);
     document.getElementById('categoryFilter').addEventListener('change', filterProducts);
 
-    // Modal functionality
+
     document.getElementById('uploadArea').addEventListener('click', () => {
         document.getElementById('imageInput').click();
     });
 
     document.getElementById('imageInput').addEventListener('change', handleImageUpload);
 
-    // Form submission
+
     document.getElementById('addProductForm').addEventListener('submit', handleFormSubmit);
 }
 
-// Fetch products from backend
 function fetchProducts() {
     fetch("http://127.0.0.1:5000/api/products")
         .then(response => {
@@ -62,7 +61,6 @@ function renderProducts(productsToRender) {
             row.style.backgroundColor = '';
         });
 
-        // Default image fallback
         const imagePath = product.image_path ? product.image_path : '/pictures/default.jpg';
 
         row.innerHTML = `
@@ -123,14 +121,14 @@ function calculateSellingPrice(costPrice) {
     return (parseFloat(costPrice || 0) * 1.2).toFixed(2);
 }
 
-// Modal functions
+
 function openAddProductModal() {
     document.getElementById('addProductModal').style.display = 'block';
     document.querySelector('#addProductModal h2').textContent = 'Add Product';
     document.getElementById('addProductForm').reset();
     document.getElementById('previewImage').style.display = 'none';
 
-    // Clear any edit mode data
+   
     document.getElementById('addProductForm').removeAttribute('data-edit-id');
 }
 
@@ -159,7 +157,7 @@ async function handleFormSubmit(event) {
     const formData = new FormData();
     const editId = event.target.getAttribute('data-edit-id');
 
-    // Collect form data
+    
     formData.append('product_name', document.getElementById('productName').value);
     formData.append('product_id', document.getElementById('productId').value);
     formData.append('category', document.getElementById('category').value);
@@ -169,7 +167,7 @@ async function handleFormSubmit(event) {
     formData.append('brand', 'Generic'); // Default brand
     formData.append('description', `${document.getElementById('productName').value} - ${document.getElementById('category').value}`);
 
-    // Add image if selected
+ 
     const imageFile = document.getElementById('imageInput').files[0];
     if (imageFile) {
         formData.append('image', imageFile);
@@ -191,7 +189,7 @@ async function handleFormSubmit(event) {
         const result = await response.json();
         showNotification(editId ? 'Product updated successfully!' : 'Product added successfully!', 'success');
         closeAddProductModal();
-        fetchProducts(); // Refresh the product list
+        fetchProducts(); 
 
     } catch (error) {
         console.error('Error saving product:', error);
@@ -206,21 +204,20 @@ async function editProduct(productId) {
         return;
     }
 
-    // Open modal in edit mode
     document.getElementById('addProductModal').style.display = 'block';
     document.querySelector('#addProductModal h2').textContent = 'Edit Product';
 
-    // Populate form with existing data
+
     document.getElementById('productName').value = product.product_name || '';
     document.getElementById('productId').value = product.product_id || '';
     document.getElementById('category').value = product.category || '';
     document.getElementById('expiryDate').value = product.expiry_date ? product.expiry_date.split('T')[0] : '';
     document.getElementById('quantity').value = product.stock_quantity || '';
-    document.getElementById('lowStockWarning').value = '10'; // Default value
+    document.getElementById('lowStockWarning').value = '10'; 
     document.getElementById('costPrice').value = product.price || '';
     document.getElementById('sellingPrice').value = calculateSellingPrice(product.price);
 
-    // Show existing image if available
+    
     if (product.image_path) {
         const previewImage = document.getElementById('previewImage');
         previewImage.src = product.image_path;
@@ -246,7 +243,7 @@ async function deleteProduct(productId) {
         }
 
         showNotification('Product deleted successfully!', 'success');
-        fetchProducts(); // Refresh the product list
+        fetchProducts(); 
 
     } catch (error) {
         console.error('Error deleting product:', error);
@@ -255,7 +252,7 @@ async function deleteProduct(productId) {
 }
 
 function showNotification(message, type = 'info') {
-    // Create notification element
+   
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
@@ -281,7 +278,7 @@ function showNotification(message, type = 'info') {
 
     document.body.appendChild(notification);
 
-    // Remove after 4 seconds
+    
     setTimeout(() => {
         if (notification.parentNode) {
             notification.style.animation = 'slideOut 0.3s ease';
@@ -290,7 +287,7 @@ function showNotification(message, type = 'info') {
     }, 4000);
 }
 
-// Close modal when clicking outside
+
 window.addEventListener('click', function (event) {
     const modal = document.getElementById('addProductModal');
     if (event.target === modal) {
@@ -298,7 +295,7 @@ window.addEventListener('click', function (event) {
     }
 });
 
-// Add CSS for animations
+
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {

@@ -23,7 +23,6 @@
             margin: 0;
         }
 
-
         .container {
             width: 100vw;
             height: 100vh;
@@ -32,8 +31,29 @@
             align-items: center;
             background: url('/pictures/SignIn.png') no-repeat center center / cover;
             position: relative;
-
         }
+
+        /* ✅ Back Button CSS */
+        .back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 12px 22px;   /* 🔹 Button ko thoda bada kar diya */
+    background-color: #0cb8b2;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;   /* 🔹 Thoda rounded zyada */
+    font-size: 16px;      /* 🔹 Text bada aur readable */
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); /* 🔹 Thoda strong shadow */
+    transition: all 0.3s ease-in-out;
+}
+
+.back-button:hover {
+    background-color: #108581;
+    transform: scale(1.05);  /* 🔹 Hover par thoda zoom effect */
+}
+
 
         .form-section {
             width: 350px;
@@ -41,12 +61,8 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            /* margin-left: 50px; */
-            /* ❌ Remove this too */
             margin-right: 60px;
-            /* ✅ Add this instead for spacing from right edge */
         }
-
 
         .logo img {
             width: 120px;
@@ -127,7 +143,6 @@
             text-decoration: underline;
         }
 
-
         @media (max-width: 768px) {
             .form-section {
                 width: 90%;
@@ -158,6 +173,9 @@
 <body>
     <div class="container">
 
+        <!-- Back Button -->
+        <a href="/" class="back-button">⬅ Back</a>
+
         <div class="form-section">
             <img>
             <h3>Welcome back !!!</h3>
@@ -171,7 +189,6 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" placeholder="Enter Your Password" required />
                 <span id="password-error" class="error-message" style="color: red; font-size: 12px;"></span>
-
 
                 <a href="/forgot_password" class="forgot-password">Forgot Password?</a>
 
@@ -262,10 +279,9 @@
     passwordInput.insertAdjacentElement("afterend", passwordError);
 
     // Live validation for email
-    // Live validation for email
 emailInput.addEventListener("input", () => {
     const emailValue = emailInput.value.trim();
-    const emailRegex = /^[^\s@]+@(gmail\.com|yahoo\.com)$/i;  // ✅ sirf gmail aur yahoo allow
+    const emailRegex = /^[^\s@]+@(gmail\.com|yahoo\.com)$/i;  //  sirf gmail aur yahoo allow
 
     if (!emailValue) {
         emailError.textContent = "Email is required.";
@@ -275,7 +291,6 @@ emailInput.addEventListener("input", () => {
         emailError.textContent = "";
     }
 });
-
 
     // Live validation for password
     passwordInput.addEventListener("input", () => {
@@ -338,8 +353,6 @@ emailInput.addEventListener("input", () => {
             });
     });
 </script>
-
-
 
             <div id="signupSection" class="signup-text">
                 I don't have an account? <a href="#" onclick="goToSignup()">Sign up</a>
