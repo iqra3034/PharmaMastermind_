@@ -96,7 +96,7 @@ def signsup():
         if role == 'customer':
             # Send verification email for customer only
             if email_service.send_verification_email(email, f"{first_name} {last_name}", verification_code):
-                print("✅ Verification email sent successfully.")
+                print(" Verification email sent successfully.")
                 return jsonify({
                     "success": True, 
                     "message": "Verification email sent! Please check your email to complete registration.",
@@ -108,7 +108,7 @@ def signsup():
             # Admin/Employee: no email, just wait for admin approval
             return jsonify({
                 "success": True,
-                "message": "Registration submitted! Waiting for admin approval.",
+                "message": "Registration submitted! Waiting for  approval.",
                 "email": email
             }), 200
             
