@@ -27,10 +27,8 @@ app.config['SESSION_COOKIE_SECURE'] = False
 
 CORS(app, supports_credentials=True)
 
-# Stripe configuration
 stripe.api_key = 'sk_test_51RvFpAFnsPUQVISnTuNYVEFQlPbjSU8HBH3sxC5nFLLIBnnuJxs9cggYNENqUKD9PWdD4jPihDlkHeMTJD5l7PxF00Arox9DUH'  
 
-# flask_mysqldb with XAMPP
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'dogarmedicalstore'
@@ -38,7 +36,6 @@ app.config['MYSQL_HOST'] = 'localhost'
 
 mysql = MySQL(app)
 
-# Initialize email service
 email_service = EmailService()
 
 app.register_blueprint(routes)
@@ -84,7 +81,7 @@ def signsup():
         mysql.connection.commit()
         cur.close()
         
-        # Branch by role
+        
         if role == 'customer':
             
             if email_service.send_verification_email(email, f"{first_name} {last_name}", verification_code):
@@ -114,7 +111,7 @@ def signsup():
             return jsonify({"success": True, "message": "Signup successful!"}), 200
             
     except Exception as e:
-        print("❌ Signup Error:", str(e))
+        print(" Signup Error:", str(e))
         return jsonify({"success": False, "message": f"An error occurred: {str(e)}"}), 400
 
 
@@ -170,11 +167,10 @@ def verify_email():
             return jsonify({"success": False, "message": "Invalid or expired verification code"})
             
     except Exception as e:
-        print("❌ Verification Error:", str(e))
+        print("Verification Error:", str(e))
         return jsonify({"success": False, "message": str(e)}), 500
 
 
-# ==================== Owner Approvals APIs =====================
 @app.route('/api/pending-approvals', methods=['GET'])
 def get_pending_approvals():
     try:
@@ -270,7 +266,7 @@ def handle_approval():
         return jsonify({"success": False, "message": str(e)}), 500
 
 
-# ==================== Admin Approvals APIs (Employee approvals) =====================
+
 @app.route('/api/admin/pending-approvals', methods=['GET'])
 def admin_get_pending_approvals():
     try:
@@ -388,7 +384,7 @@ def resend_verification():
             return jsonify({"success": False, "message": "Email not found in pending registrations"}), 404
             
     except Exception as e:
-        print("❌ Resend Verification Error:", str(e))
+        print(" Resend Verification Error:", str(e))
         return jsonify({"success": False, "message": str(e)}), 500
 
 
@@ -411,7 +407,7 @@ def signsin():
                 session['role'] = user[6]
                 session['user_id'] = user[0]
 
-                print("✅ SESSION SET:", session)
+                print("SESSION SET:", session)
 
                 return jsonify({
                     "success": True,
@@ -460,7 +456,7 @@ def forgot_password():
             return jsonify({"success": False, "message": "Failed to send reset email"}), 500
 
     except Exception as e:
-        print("❌ Forgot Password Error:", str(e))
+        print(" Forgot Password Error:", str(e))
         return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route("/reset-password", methods=["POST"])
@@ -495,7 +491,7 @@ def reset_password():
         return jsonify({"success": True, "message": "Password updated successfully!"}), 200
 
     except Exception as e:
-        print("❌ Reset Password Error:", str(e))
+        print(" Reset Password Error:", str(e))
         return jsonify({"success": False, "message": str(e)}), 500
 
 
@@ -513,7 +509,6 @@ def home():
     return render_template('home.html')
 
 
-# Customer Profile APIs
 @app.route('/api/user/<int:user_id>', methods=['GET'])
 def get_user_profile(user_id):
     try:
@@ -642,7 +637,7 @@ def get_my_orders():
         return jsonify([])
 
 
-# Admin User Management APIs
+
 @app.route('/api/users', methods=['GET'])
 def get_all_users():
     try:
@@ -663,7 +658,7 @@ def add_user():
     try:
         data = request.get_json()
         
-        # Hash password
+        
         hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
         cur = mysql.connection.cursor()
@@ -693,9 +688,9 @@ def update_user(user_id):
         
         cur = mysql.connection.cursor()
         
-        # Build update query
+    
         if 'password' in data and data['password']:
-            # Update with password
+    
             hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             cur.execute("""
                 UPDATE users SET 
@@ -716,7 +711,7 @@ def update_user(user_id):
                 user_id
             ))
         else:
-            # Update without password
+        
             cur.execute("""
                 UPDATE users SET 
                     username = %s, 
@@ -755,13 +750,13 @@ def delete_user(user_id):
         return jsonify({"success": False, "message": str(e)}), 500
 
 
-# Customer Ledger API
+
 @app.route('/api/customer-ledger/<int:customer_id>', methods=['GET'])
 def get_customer_ledger(customer_id):
     try:
         cur = mysql.connection.cursor()
         
-        # Get customer info
+
         cur.execute("SELECT id, username, first_name, last_name, email FROM users WHERE id = %s", (customer_id,))
         customer_info = cur.fetchone()
         
@@ -774,7 +769,7 @@ def get_customer_ledger(customer_id):
             'email': customer_info[4]
         }
         
-        # Get all transactions for this customer
+
         cur.execute("""
             SELECT 
                 o.order_date as date,
@@ -864,7 +859,7 @@ def get_customer_ledger(customer_id):
         return jsonify({"error": str(e)}), 500
 
 
-# Add new product
+
 @app.route('/api/products', methods=['GET'])
 def get_products():
     try:
@@ -889,18 +884,18 @@ def get_products():
         return jsonify({"error": f"MySQL Error: {str(err)}"}), 500
 
 
-# Add new product
+
 @app.route('/api/products', methods=['POST'])
 def add_product():
     try:
         data = request.form
         
-        # Handle image upload
+        
         image_path = None
         if 'image' in request.files:
             image = request.files['image']
             if image.filename != '':
-                # Save image to pictures folder
+        
                 image_filename = f"product_{data['product_id']}_{image.filename}"
                 image_path = f"/pictures/{image_filename}"
                 image.save(f"pictures/{image_filename}")
@@ -929,13 +924,12 @@ def add_product():
         return jsonify({"error": str(e)}), 500
 
 
-# Update product
 @app.route('/api/products/<int:product_id>', methods=['PUT'])
 def update_product(product_id):
     try:
         data = request.form
         
-        # Handle image upload
+    
         image_path = None
         if 'image' in request.files:
             image = request.files['image']
@@ -946,7 +940,7 @@ def update_product(product_id):
         
         cur = mysql.connection.cursor()
         
-        # Build update query dynamically
+        
         update_fields = []
         values = []
         
@@ -994,7 +988,6 @@ def update_product(product_id):
         return jsonify({"error": str(e)}), 500
 
 
-# Delete product
 @app.route('/api/products/<int:product_id>', methods=['DELETE'])
 def delete_product(product_id):
     try:
@@ -1012,7 +1005,7 @@ from MySQLdb.cursors import DictCursor
 @app.route('/api/customers', methods=['GET'])
 def get_customers():
     try:
-        cur = mysql.connection.cursor(DictCursor)   # ✅ DictCursor
+        cur = mysql.connection.cursor(DictCursor)   
         cur.execute("""
             SELECT id, first_name, last_name, email, username, role
             FROM users
@@ -1022,7 +1015,7 @@ def get_customers():
         cur.close()
         return jsonify(customers), 200
     except Exception as e:
-        print("❌ Error in /api/customers:", str(e))
+        print("Error in /api/customers:", str(e))
         return jsonify({"error": str(e)}), 500
 
 
@@ -1030,7 +1023,7 @@ def get_customers():
 @app.route('/api/customer-orders', methods=['GET'])
 def get_customer_orders():
     try:
-        cur = mysql.connection.cursor(DictCursor)   # ✅ DictCursor
+        cur = mysql.connection.cursor(DictCursor)  
         cur.execute("""
             SELECT order_id, customer_id, total_amount, order_date, payment_status
             FROM orders
@@ -1040,15 +1033,14 @@ def get_customer_orders():
         cur.close()
         return jsonify(orders), 200
     except Exception as e:
-        print("❌ Error in /api/customer-orders:", str(e))
+        print(" Error in /api/customer-orders:", str(e))
         return jsonify({"error": str(e)}), 500
 
 
-# 3. Get order details for single customer
 @app.route('/api/customer-order-details/<int:customer_id>', methods=['GET'])
 def get_customer_order_details(customer_id):
     try:
-        cur = mysql.connection.cursor(DictCursor)   # ✅ DictCursor
+        cur = mysql.connection.cursor(DictCursor)  
         query = """
             SELECT o.order_id, o.customer_id, o.order_date, o.total_amount, o.payment_status,
                    oi.product_id, p.product_name, oi.quantity
@@ -1062,7 +1054,7 @@ def get_customer_order_details(customer_id):
         rows = cur.fetchall()
         cur.close()
 
-        # Group items under each order
+
         orders = {}
         for row in rows:
             oid = row['order_id']
@@ -1084,10 +1076,8 @@ def get_customer_order_details(customer_id):
 
         return jsonify(list(orders.values())), 200
     except Exception as e:
-        print("❌ Error in /api/customer-order-details:", str(e))
+        print(" Error in /api/customer-order-details:", str(e))
         return jsonify({"error": str(e)}), 500
-
-#invetory order for pharmacy
 
 
 @app.route('/save_pharmacy_order', methods=['POST'])
@@ -1124,7 +1114,6 @@ def save_pharmacy_order():
         mysql.connection.commit()
         cur.close()
 
-        # Generate formatted PDF
         pdf_path = generate_pharmacy_order_pdf(
             order_id=pharmacy_order_id,
             supplier_name=supplier_name,
@@ -1171,7 +1160,6 @@ def generate_pharmacy_order_pdf(order_id, supplier_name, expected_delivery_date,
     pdf.cell(0, 10, f"Order Date: {datetime.now().strftime('%d %B %Y, %I:%M %p')}", ln=True)
     pdf.ln(10)
 
-    # Table Headers
     pdf.set_font("Arial", "B", 12)
     pdf.set_fill_color(240, 240, 255)
     pdf.cell(80, 10, "Product", 1, 0, "C", True)
@@ -1179,7 +1167,7 @@ def generate_pharmacy_order_pdf(order_id, supplier_name, expected_delivery_date,
     pdf.cell(30, 10, "Unit Price", 1, 0, "C", True)
     pdf.cell(40, 10, "Total", 1, 1, "C", True)
 
-    # Table Data
+
     pdf.set_font("Arial", "", 12)
     for item in items:
         total = item['quantity'] * item['price']
@@ -1188,13 +1176,12 @@ def generate_pharmacy_order_pdf(order_id, supplier_name, expected_delivery_date,
         pdf.cell(30, 10, f"Rs. {item['price']}", 1, 0, "C")
         pdf.cell(40, 10, f"Rs. {total}", 1, 1, "C")
 
-    # Total
+
     pdf.ln(5)
     pdf.set_font("Arial", "B", 12)
     pdf.cell(140, 10, "Total Amount", 1)
     pdf.cell(40, 10, f"Rs. {total_amount:.2f}", 1, 1, "C")
 
-    # Save PDF
     pdf_folder = "orders"
     os.makedirs(pdf_folder, exist_ok=True)
     filename = f"order_{order_id}.pdf"
@@ -1204,7 +1191,6 @@ def generate_pharmacy_order_pdf(order_id, supplier_name, expected_delivery_date,
     return path
 
 
-# Stripe Payment Intent Creation
 @app.route('/api/create_payment_intent', methods=['POST'])
 def create_payment_intent():
     try:
@@ -1213,7 +1199,6 @@ def create_payment_intent():
         currency = data.get('currency', 'pkr')
         cart = data.get('cart', [])
 
-        # Create payment intent with Stripe
         intent = stripe.PaymentIntent.create(
             amount=amount,
             currency=currency,
@@ -1232,7 +1217,7 @@ def create_payment_intent():
         return jsonify({'error': str(e)}), 500
 
 
-# Get expired products
+
 @app.route('/api/expired_products', methods=['GET'])
 def get_expired_products():
     try:
@@ -1250,7 +1235,7 @@ def get_expired_products():
         columns = [desc[0] for desc in cur.description]
         expired_products = [dict(zip(columns, row)) for row in rows]
         
-        # Calculate days expired
+    
         for product in expired_products:
             expiry_date = product['expiry_date']
             if isinstance(expiry_date, datetime):
@@ -1269,7 +1254,7 @@ def get_expired_products():
         return jsonify({"error": str(e)}), 500
 
 
-# Save Customer Order with Payment Details
+
 @app.route('/api/save_customer_order', methods=['POST'])
 def save_customer_order():
     data = request.json
@@ -1297,7 +1282,7 @@ def save_customer_order():
         
         order_id = cur.lastrowid
 
-        # Insert order items and update stock
+        
         for item in cart:
             cur.execute("""
                 INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price, total_price)
@@ -1324,7 +1309,6 @@ def save_customer_order():
 
         mysql.connection.commit()
 
-        # Generate customer receipt PDF
         pdf_path = generate_customer_receipt_pdf(
             order_id=order_id,
             cart=cart,
@@ -1370,7 +1354,7 @@ def generate_customer_receipt_pdf(order_id, cart, total_amount, paid_amount, cha
     pdf.line(20, pdf.get_y(), 190, pdf.get_y())
     pdf.ln(8)
 
-    # Receipt 
+    
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 8, f"CUSTOMER RECEIPT", ln=True, align="C")
     pdf.ln(3)
@@ -1382,7 +1366,7 @@ def generate_customer_receipt_pdf(order_id, cart, total_amount, paid_amount, cha
     pdf.cell(95, 6, f"Card: ****{card_last_four}", ln=True, align="R")
     pdf.ln(5)
 
-    # Table Header
+   
     pdf.set_font("Arial", "B", 10)
     pdf.set_fill_color(240, 248, 255)
     pdf.cell(25, 8, "Qty", border=1, align="C", fill=True)
@@ -1391,7 +1375,7 @@ def generate_customer_receipt_pdf(order_id, cart, total_amount, paid_amount, cha
     pdf.cell(30, 8, "Total", border=1, align="C", fill=True)
     pdf.ln()
 
-    # Table Items
+    
     pdf.set_font("Arial", "", 9)
     for item in cart:
         item_total = item['price'] * item['quantity']
@@ -1401,11 +1385,11 @@ def generate_customer_receipt_pdf(order_id, cart, total_amount, paid_amount, cha
         pdf.cell(30, 7, f"Rs. {item_total:.2f}", border=1, align="R")
         pdf.ln()
 
-    # Summary Section
+    
     pdf.ln(5)
     pdf.set_font("Arial", "", 10)
     
-    # Summary box
+    
     summary_y = pdf.get_y()
     pdf.rect(130, summary_y, 60, 35)
     
@@ -1422,13 +1406,13 @@ def generate_customer_receipt_pdf(order_id, cart, total_amount, paid_amount, cha
     pdf.set_font("Arial", "", 9)
     pdf.cell(50, 6, f"Paid: Rs. {paid_amount:.2f}", ln=True)
 
-    # Payment method 
+    
     pdf.ln(8)
     pdf.set_font("Arial", "", 9)
     pdf.cell(0, 6, f"Payment Method: Credit/Debit Card (****{card_last_four})", ln=True, align="C")
     pdf.cell(0, 6, "Payment Status: APPROVED", ln=True, align="C")
 
-    # Footer
+    
     pdf.ln(10)
     pdf.set_font("Arial", "B", 11)
     pdf.cell(0, 8, "Thank You for Shopping with Us!", ln=True, align="C")
@@ -1436,7 +1420,6 @@ def generate_customer_receipt_pdf(order_id, cart, total_amount, paid_amount, cha
     pdf.cell(0, 5, "For any queries, please contact us at support@pharmamaster.com", ln=True, align="C")
     pdf.cell(0, 5, "Visit us online: www.pharmamaster.com", ln=True, align="C")
 
-    # Save PDF
     pdf_folder = "customer_receipts"
     os.makedirs(pdf_folder, exist_ok=True)
     filename = f"customer_receipt_{order_id}.pdf"
@@ -1454,7 +1437,7 @@ def download_customer_receipt(filename):
         return jsonify({"error": str(e)}), 404
 
 
-#POS
+
 @app.route('/api/save_order', methods=['POST'])
 def save_order():
     data = request.json
@@ -1491,7 +1474,7 @@ def save_order():
         mysql.connection.commit()
         cur.close()
 
-        # = Generate PDF Receipt =
+        
         os.makedirs("receipts", exist_ok=True)
         pdf = FPDF()
         pdf.add_page()
@@ -1508,20 +1491,20 @@ def save_order():
         pdf.cell(190, 0, "", ln=True, border="T")
         pdf.ln(4)
 
-        # Invoice Info
+        
         pdf.set_font("Arial", "", 11)
         pdf.cell(95, 8, f"Invoice No: TI{order_id}", border=0)
         pdf.cell(95, 8, datetime.now().strftime("%d %b %Y   %H:%M"), ln=True, align="R")
         pdf.ln(4)
 
-        # Table Header
+        
         pdf.set_font("Arial", "B", 11)
         pdf.cell(30, 8, "Qty", border=1, align="C")
         pdf.cell(100, 8, "Description", border=1, align="C")
         pdf.cell(60, 8, "Price", border=1, align="C")
         pdf.ln()
 
-        # Items
+        
         pdf.set_font("Arial", "", 11)
         for item in cart:
             quantity = str(item['quantity'])
@@ -1540,12 +1523,12 @@ def save_order():
         pdf.cell(190, 8, f"Paid Amount: {paid_amount:.2f}", ln=True, align="R")
         pdf.cell(190, 8, f"Change: {change_amount:.2f}", ln=True, align="R")
 
-        # Thank You Note
+        
         pdf.ln(10)
         pdf.set_font("Arial", "B", 12)
         pdf.cell(190, 10, "Thank You!", ln=True, align="C")
 
-        # Save PDF
+       
         pdf_filename = f"receipt_{order_id}.pdf"
         pdf_path = os.path.join("receipts", pdf_filename)
         pdf.output(pdf_path)
@@ -1567,7 +1550,7 @@ def download_receipt(filename):
         return jsonify({"error": str(e)}), 404
 
 
-# Invoice Generation
+
 from MySQLdb.cursors import DictCursor
 
 @app.route('/api/invoice/<order_id>')
@@ -1575,14 +1558,14 @@ def get_invoice(order_id):
     conn = mysql.connection
     cursor = conn.cursor(DictCursor)
 
-    # Fetch order
+    
     cursor.execute("SELECT * FROM orders WHERE order_id = %s", (order_id,))
     order = cursor.fetchone()
 
     if not order:
         return jsonify({"error": "Order not found"}), 404
 
-    # Fetch order items
+    
     cursor.execute("SELECT * FROM order_items WHERE order_id = %s", (order_id,))
     items = cursor.fetchall()
 
@@ -1592,7 +1575,7 @@ def get_invoice(order_id):
     }), 200
 
 
-# Process Return
+
 @app.route('/api/process_return', methods=['POST'])
 def process_return():
     try:
@@ -1633,7 +1616,7 @@ def process_return():
         return jsonify({"success": False, "message": str(e)}), 500
 
 
-# Save Auto Generated Order List
+
 @app.route('/api/save_auto_order', methods=['POST'])
 def save_auto_order():
     try:
@@ -1684,7 +1667,7 @@ def save_auto_order():
         return jsonify({"success": False, "message": str(e)}), 500
 
 
-# Get all employees
+
 @app.route('/employees/add', methods=['POST'])
 def add_employee():
     data = request.get_json()
@@ -1722,7 +1705,7 @@ def get_employees():
         return jsonify({'error': str(e)}), 500
 
 
-# Update employee
+
 @app.route('/api/employees/<string:emp_id>', methods=['PUT'])
 def update_employee(emp_id):
     try:
@@ -1748,7 +1731,7 @@ def update_employee(emp_id):
 
 
 
-# Delete employee
+
 @app.route('/api/employees/<string:emp_id>', methods=['DELETE'])
 def delete_employee(emp_id):
     try:

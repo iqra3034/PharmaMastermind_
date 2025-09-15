@@ -15,13 +15,13 @@ function setupEventListeners() {
         saveUser();
     });
 
-    // Search functionality
+    
     const searchInput = document.getElementById("searchUsers");
     searchInput.addEventListener("input", function(e) {
         filterUsers();
     });
 
-    // Filter functionality
+    
     const roleFilter = document.getElementById("roleFilter");
     const sortBy = document.getElementById("sortBy");
     
@@ -82,7 +82,7 @@ function displayUsers(userList) {
         tableBody.appendChild(row);
     });
 
-    // Add role and status badge styles
+    
     addBadgeStyles();
 }
 
@@ -158,7 +158,7 @@ function filterUsers() {
         return matchesSearch && matchesRole;
     });
 
-    // Sort users
+    
     filteredUsers.sort((a, b) => {
         switch(sortBy) {
             case 'username':
@@ -212,7 +212,7 @@ function saveUser() {
         password: document.getElementById("password").value.trim()
     };
 
-    // Validation
+    
     if (!validateUser(userData)) {
         return;
     }
@@ -220,7 +220,7 @@ function saveUser() {
     const url = editMode ? `/api/users/${editUserId}` : "/api/users";
     const method = editMode ? "PUT" : "POST";
 
-    // Don't send password if it's empty during edit
+    
     if (editMode && !userData.password) {
         delete userData.password;
     }
@@ -250,20 +250,20 @@ function saveUser() {
 }
 
 function validateUser(userData) {
-    // Check if username already exists (for new users)
+    
     if (!editMode && users.some(user => user.username === userData.username)) {
         showNotification('Username already exists', 'error');
         return false;
     }
 
-    // Check if email already exists
+    
     const existingEmail = users.find(user => user.email === userData.email);
     if (existingEmail && (!editMode || existingEmail.id !== editUserId)) {
         showNotification('Email already exists', 'error');
         return false;
     }
 
-    // Validate password for new users
+    
     if (!editMode && userData.password.length < 6) {
         showNotification('Password must be at least 8 characters long', 'error');
         return false;
@@ -317,7 +317,7 @@ function showNotification(message, type = 'info') {
         </div>
     `;
 
-    // Add notification styles if not already added
+    
     if (!document.getElementById('notification-styles')) {
         const style = document.createElement('style');
         style.id = 'notification-styles';
@@ -361,7 +361,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Close modals when clicking outside
+
 window.onclick = function (event) {
     const userModal = document.getElementById("userModal");
     const deleteModal = document.getElementById("deleteModal");

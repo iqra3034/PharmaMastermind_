@@ -4,11 +4,11 @@ let allOrders = [];
 document.addEventListener('DOMContentLoaded', function() {
     fetchCustomerData();
     
-    // Add event listeners
+    
     document.getElementById('searchCustomer').addEventListener('input', filterCustomers);
     document.getElementById('sortBy').addEventListener('change', sortCustomers);
     
-    // Modal close functionality
+    
     document.querySelector('.close-modal').addEventListener('click', closeModal);
     window.addEventListener('click', function(event) {
         const modal = document.getElementById('customerModal');
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function fetchCustomerData() {
     try {
-        // Fetch users and orders data
+        
         const [usersResponse, ordersResponse] = await Promise.all([
             fetch('/api/customers'),
             fetch('/api/customer-orders')
@@ -33,10 +33,10 @@ async function fetchCustomerData() {
         const users = await usersResponse.json();
         allOrders = await ordersResponse.json();
         
-        // Process customer data
+        
         customers = processCustomerData(users, allOrders);
         
-        // Update UI
+      
         updateStatistics();
         displayCustomers(customers);
         
@@ -49,7 +49,7 @@ async function fetchCustomerData() {
 function processCustomerData(users, orders) {
     const customerMap = new Map();
     
-    // Initialize customers from users
+    
     users.forEach(user => {
         if (user.role === 'customer') {
             customerMap.set(user.id, {
@@ -65,7 +65,7 @@ function processCustomerData(users, orders) {
         }
     });
     
-    // Add order data
+    
     orders.forEach(order => {
         if (order.customer_id && customerMap.has(order.customer_id)) {
             const customer = customerMap.get(order.customer_id);
@@ -170,7 +170,7 @@ async function viewCustomerDetails(customerId) {
     if (!customer) return;
     
     try {
-        // Fetch detailed order items for this customer
+        
         const response = await fetch(`/api/customer-order-details/${customerId}`);
         const orderDetails = await response.json();
         
@@ -231,14 +231,14 @@ function generateOrderHistoryHTML(orderDetails) {
     `;
     
     orderDetails.forEach(order => {
-        console.log("Order data:", order); // 🔍 Check this in browser console
+        console.log("Order data:", order); 
 
         const orderDate = new Date(order.order_date).toLocaleDateString();
         const products = order.items ? order.items.map(item => 
             `${item.product_name} (${item.quantity}x)`
         ).join(', ') : 'No items';
 
-        const paymentStatus = order.payment_status || 'N/A'; // Safe fallback
+        const paymentStatus = order.payment_status || 'N/A'; 
 
         html += `
             <tr style="border-bottom: 1px solid #eee;">
@@ -269,7 +269,7 @@ function refreshCustomerData() {
 }
 
 function showNotification(message, type = 'info') {
-    // Create notification element
+    
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
@@ -286,7 +286,7 @@ function showNotification(message, type = 'info') {
     
     document.body.appendChild(notification);
     
-    // Remove after 3 seconds
+    
     setTimeout(() => {
         if (notification.parentNode) {
             notification.remove();

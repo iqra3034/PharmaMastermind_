@@ -1,4 +1,4 @@
-// Monthly Sales Chart
+
 const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
 const monthlyChart = new Chart(monthlyCtx, {
     type: 'bar',
@@ -22,7 +22,7 @@ const monthlyChart = new Chart(monthlyCtx, {
     }
 });
 
-// Yearly Sales Chart
+
 const yearlyCtx = document.getElementById('yearlyChart').getContext('2d');
 const yearlyChart = new Chart(yearlyCtx, {
     type: 'line',
@@ -47,7 +47,7 @@ const yearlyChart = new Chart(yearlyCtx, {
     }
 });
 
-// Add event listeners for sidebar navigation
+
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', () => {
         document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
@@ -55,16 +55,16 @@ document.querySelectorAll('.nav-item').forEach(item => {
     });
 });
 
-// Add event listeners for replace buttons
+
 document.querySelectorAll('.replace-btn').forEach(button => {
     button.addEventListener('click', function() {
         alert('Replacement order initiated!');
     });
 });
 
-// Search functionality
+
 const searchInput = document.querySelector('.search-bar input');
 searchInput.addEventListener('input', function(e) {
     console.log('Searching for:', e.target.value);
-    // Implement search functionality here
+    
 });

@@ -4,24 +4,23 @@ let cart = [];
 document.addEventListener("DOMContentLoaded", () => {
     fetchProducts();
 
-    // Paid amount calculation
+    
     document.getElementById("paidAmount").addEventListener("input", updateBillingSummary);
 
-    // Search bar functionality
+    
     document.getElementById("searchInput").addEventListener("keyup", function () {
         const filter = this.value.toLowerCase();
 
-        // Filter products by name or product_id
+        
         const filteredProducts = products.filter(product =>
             product.product_name.toLowerCase().includes(filter) ||
             product.product_id.toString().includes(filter)
         );
 
-        // Show only matched products
+        
         displayProducts(filteredProducts);
     });
 
-    // Category filter
     document.getElementById("categorySelect").addEventListener("change", function () {
         const category = this.value;
 
@@ -36,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// Helper function to show popup messages
+
 function showPopup(message, type = "success") {
     const existing = document.getElementById("popupMessage");
     if (existing) existing.remove();
@@ -56,9 +55,9 @@ function showPopup(message, type = "success") {
     popup.style.transition = "opacity 0.5s";
 
     if (type === "success") {
-        popup.style.backgroundColor = "#28a745"; // Green
+        popup.style.backgroundColor = "#28a745"; 
     } else if (type === "error") {
-        popup.style.backgroundColor = "#dc3545"; // Red
+        popup.style.backgroundColor = "#dc3545"; 
     }
 
     document.body.appendChild(popup);
@@ -171,7 +170,7 @@ async function saveOrder() {
     const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const changeAmount = paidAmount - totalAmount;
 
-    // Validation check
+    
     if (paidAmount <= 0) {
         showPopup("Please enter a valid paid amount.", "error");
         return;
@@ -213,7 +212,6 @@ async function saveOrder() {
     }
 }
 
-// newOrder() function 
 function newOrder() {
     clearCart();
 }

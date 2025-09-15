@@ -33,7 +33,7 @@ def test_dss():
     return jsonify({"message": "DSS Blueprint Working!"})
 
 
-#Decision Support System (DSS) Analysis
+
 @dss_bp.route("/dss", methods=['GET'])
 
 def decision_support_system_advanced():
@@ -43,11 +43,6 @@ def decision_support_system_advanced():
         conn = mysql.connection
 
         cursor = conn.cursor()
-
-
-
-        # STEP 1: Query with comprehensive historical data including daily, weekly, monthly sales
-
         query = """
 
             SELECT 
@@ -133,11 +128,11 @@ def decision_support_system_advanced():
         from sklearn.cluster import KMeans
         from datetime import datetime
 
-        # Convert all quantities to float to avoid decimal/float conflicts
+        
         quantities = [float(item["total_quantity"]) for item in results]
         quantity_array = np.array(quantities).reshape(-1, 1)
 
-        # STEP 2: KMeans
+    
 
         if len(quantities) >= 3:
             kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
@@ -154,14 +149,14 @@ def decision_support_system_advanced():
 
         formatted_results = []
         for item, label in zip(results, labels):
-            # Convert all decimal values to float
+           
             cost_price = float(item["unit_cost_price"])
             selling_price = float(item["unit_selling_price"])
             total_cost = float(item["total_cost"])
             total_revenue = float(item["total_revenue"])
             quantity_sold = float(item["total_quantity"])
 
-            # Core calculations
+           
             total_profit = total_revenue - total_cost
             profit_margin = (total_profit / total_revenue * 100) if total_revenue > 0 else 0.0
             if profit_margin < 0: 
@@ -172,7 +167,7 @@ def decision_support_system_advanced():
             sales_revenue = total_revenue
             demand_level = demand_mapping.get(label, "Low")
 
-            # Sales metrics
+            
             daily_sales_30 = float(item.get("daily_sales_30", 0))
             weekly_sales_4 = float(item.get("weekly_sales_4", 0))
             monthly_sales_3 = float(item.get("monthly_sales_3", 0))
@@ -181,7 +176,7 @@ def decision_support_system_advanced():
             last_sale_date = item.get("last_sale_date")
             avg_unit_price = float(item.get("avg_unit_price", 0))
 
-            # Sales velocity
+            
             if first_sale_date and last_sale_date:
                 date_diff = (last_sale_date - first_sale_date).days
                 sales_velocity = round(quantity_sold / max(date_diff / 30.0, 1.0), 2) if date_diff > 0 else 0.0
@@ -216,7 +211,7 @@ def decision_support_system_advanced():
                 "data_quality": "High" if sales_velocity > 10 else "Medium" if sales_velocity > 5 else "Low"
             })
 
-            # STEP 3: INSERT or UPDATE
+            
             cursor.execute("SELECT record_id FROM profit_records WHERE product_id = %s", (item["product_id"],))
             existing_record = cursor.fetchone()
 
@@ -286,7 +281,7 @@ def decision_support_system_advanced():
         conn.rollback()
         return jsonify({"error": str(e)}), 500
 
-# Predict Restocks
+
 @dss_bp.route('/predict_restocks', methods=['GET'])
 def predict_restocks():
     try:
@@ -299,7 +294,7 @@ def predict_restocks():
         conn = mysql.connection
         cursor = conn.cursor()
 
-        # Helper function to convert Decimal → float
+        
         def to_float(val):
             if val is None:
                 return 0.0
@@ -307,7 +302,7 @@ def predict_restocks():
                 return float(val)
             return float(val)
 
-        # 1) Products with sales history
+        
         cursor.execute("""
             SELECT DISTINCT
                 p.product_id,
@@ -337,7 +332,7 @@ def predict_restocks():
         product_ids = [p['product_id'] for p in products]
         placeholders = ','.join(['%s'] * len(product_ids))
 
-        # 2) Monthly sales
+        
         cursor.execute(f"""
             SELECT
                 oi.product_id,
@@ -371,7 +366,7 @@ def predict_restocks():
             months = monthly_map.get(pid, {}).get("months", [])
             sales = monthly_map.get(pid, {}).get("sales", [])
 
-            # --- Linear Regression Forecast 
+            
             forecast_units = 0
             if len(sales) >= 2 and sum(sales) > 0:
                 X = np.array(months).reshape(-1, 1)
@@ -380,7 +375,7 @@ def predict_restocks():
                 next_m = np.array([[len(months) + 1]])
                 forecast_units = max(int(round(model.predict(next_m)[0])), 0)
             
-            # 🔹 Forecast Accuracy 
+           
             cursor.execute("""
                 SELECT 
                     AVG(LEAST(GREATEST(
@@ -402,16 +397,16 @@ def predict_restocks():
             db_row = cursor.fetchone()
             forecast_accuracy = float(db_row[0]) if db_row and db_row[0] is not None else random.randint(50, 70)
 
-            # Avg daily demand (avoid 0)
+            
             avg_daily_demand = forecast_units / 30.0 if forecast_units > 0 else max(stock_qty / 30.0, 1)
 
-            # Randomize restock days slightly to avoid same date for all
+            
             days_until_restock = int(stock_qty / avg_daily_demand) if avg_daily_demand > 0 else random.randint(5,15)
-            days_until_restock += random.randint(-2, 3)  # small variation
+            days_until_restock += random.randint(-2, 3)  
             restock_date = (datetime.now() + timedelta(days=max(days_until_restock,1))).date()
             recommended_quantity = max(forecast_units, 1)
 
-            # --- KPIs ---
+            
             total_units_sold = float(sum(sales)) if sales else 0.0
             cogs_value = total_units_sold * cost_price
             avg_monthly_units = (np.mean(sales) if sales else 0.0)
@@ -420,7 +415,7 @@ def predict_restocks():
             days_on_hand = round(stock_qty / avg_daily_demand, 2) if avg_daily_demand > 0 else 0.0
             dsi = round(365 / turnover_rate, 2) if turnover_rate > 0 else 0.0
 
-            # Profit-based
+            
             unit_profit = price - cost_price
             total_profit = forecast_units * unit_profit
             if unit_profit > 50:
@@ -430,7 +425,7 @@ def predict_restocks():
             else:
                 profit_priority = "Low Profit"
 
-            # Demand-based
+            
             if avg_daily_demand > 10:
                 demand_priority = "High Demand"
             elif avg_daily_demand > 3:
@@ -438,7 +433,7 @@ def predict_restocks():
             else:
                 demand_priority = "Low Demand"
 
-            # Demand insights
+            
             if turnover_rate > 5:
                 demand_insight = "Fast Moving"
             elif turnover_rate >= 2:
@@ -446,7 +441,7 @@ def predict_restocks():
             else:
                 demand_insight = "Slow Moving"
 
-            # Confidence
+            
             mcount = len(sales)
             prediction_confidence = "High" if mcount >= 6 else "Medium" if mcount >= 3 else "Low"
 
@@ -472,7 +467,7 @@ def predict_restocks():
             }
             results.append(row)
 
-            # Save/update DB
+            
             cursor.execute("""
                 INSERT INTO restock_prediction
                     (product_id, prediction_date, current_stock, predicted_restock_date,
@@ -501,7 +496,7 @@ def predict_restocks():
 
 
 
-# Expiry alerts
+
 @dss_bp.route('/expiry_alerts', methods=['GET'])
 def expiry_alerts():
     current_date = datetime.now().date()
@@ -513,7 +508,7 @@ def expiry_alerts():
         conn = mysql.connection
         cursor = conn.cursor()
 
-        # ✅ Include image_path from DB
+        
         cursor.execute("""
             SELECT product_id, product_name, expiry_date, stock_quantity, image_path, cost_price
             FROM products
@@ -534,14 +529,14 @@ def expiry_alerts():
             stock_quantity = row['stock_quantity']
             image_path = row['image_path']
 
-            # ✅ Clean image URL
+            
             if image_path:
                 if image_path.lower().startswith('http'):  
-                    image_url = image_path  # Already full URL
+                    image_url = image_path  
                 elif image_path.startswith('/pictures/'):
-                    image_url = image_path  # Already correct path
+                    image_url = image_path 
                 else:
-                    image_url = f"/pictures/{image_path}"  # Only filename
+                    image_url = f"/pictures/{image_path}"  
             else:
                 image_url = None
 
@@ -552,7 +547,7 @@ def expiry_alerts():
 
             time_to_expiry = (expiry_datetime - datetime.now()).days
 
-            # Fetch sales data in last 30 days
+            
             cursor.execute("""
                 SELECT SUM(oi.quantity) AS total_sales
                 FROM order_items oi
@@ -569,10 +564,10 @@ def expiry_alerts():
             total_sales = float(total_sales)
             time_to_expiry = float(time_to_expiry)
 
-            # Priority Score
+            
             priority_score = (total_sales * 1) + (time_to_expiry * 0.5)
 
-            # Expiry Alert Level
+            
             if time_to_expiry <= 7.0:
                 expiry_alert = 'Urgent (Within 1 Week)'
             elif time_to_expiry <= 30.0:
@@ -601,7 +596,7 @@ def expiry_alerts():
         return jsonify({"error": f"Error: {str(e)}"}), 500
 
 
-# ============== REPORT GENERATION HELPERS & ENDPOINTS ==============
+
 def _generate_pdf_report(title: str, columns: list, rows: list, col_widths: list | None = None) -> str:
     os.makedirs('reports', exist_ok=True)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -610,12 +605,12 @@ def _generate_pdf_report(title: str, columns: list, rows: list, col_widths: list
 
     class ReportPDF(FPDF):
         def header(self):
-            # Skip header on the very first page (we will render custom title + header)
+            
             if getattr(self, 'skip_first_header', False):
-                # Reset the flag so next pages will render header
+                
                 self.skip_first_header = False
                 return
-            # Render table header on subsequent pages
+            
             self.set_font("Arial", "B", 10)
             self.set_fill_color(240, 248, 255)
             self.set_x(self.l_margin)
@@ -626,7 +621,7 @@ def _generate_pdf_report(title: str, columns: list, rows: list, col_widths: list
 
     pdf = ReportPDF(orientation='L', unit='mm', format='A4')
     pdf.skip_first_header = True
-    # Determine effective width for dynamic column sizing
+   
     pdf.set_auto_page_break(auto=True, margin=15)
     effective_width = pdf.w - pdf.l_margin - pdf.r_margin
     if not col_widths:
@@ -635,7 +630,7 @@ def _generate_pdf_report(title: str, columns: list, rows: list, col_widths: list
     pdf.col_widths = col_widths
     pdf.add_page()
 
-    # Header
+   
     pdf.set_font("Arial", "B", 16)
     pdf.set_text_color(19, 139, 168)
     pdf.cell(0, 10, f"{title}", ln=True, align="C")
@@ -644,7 +639,7 @@ def _generate_pdf_report(title: str, columns: list, rows: list, col_widths: list
     pdf.cell(0, 8, datetime.now().strftime("Generated on %d %b %Y %H:%M"), ln=True, align="C")
     pdf.ln(4)
 
-    # Table Header (first page)
+    
     pdf.set_font("Arial", "B", 10)
     pdf.set_fill_color(240, 248, 255)
     pdf.set_x(pdf.l_margin)
@@ -652,7 +647,7 @@ def _generate_pdf_report(title: str, columns: list, rows: list, col_widths: list
         pdf.cell(col_widths[i], 8, str(col)[:40], border=1, align='C', fill=True)
     pdf.ln(8)
 
-    # Table Rows with robust wrapping and page-break handling
+    
     pdf.set_font("Arial", "", 9)
     line_height = 6
     
@@ -678,12 +673,12 @@ def _generate_pdf_report(title: str, columns: list, rows: list, col_widths: list
                     line_w += add_w
                 else:
                     lines += 1
-                    line_w = ww  # start new line with current word
+                    line_w = ww  
             total_lines += max(1, lines)
         return total_lines
 
     for row in rows:
-        # Compute row height by max number of lines across cells
+      
         max_lines = 1
         for i, col in enumerate(row):
             lines = nb_lines_for_text(col_widths[i], '' if col is None else str(col))
@@ -691,25 +686,25 @@ def _generate_pdf_report(title: str, columns: list, rows: list, col_widths: list
                 max_lines = lines
         row_height = line_height * max_lines
 
-        # Page break if row won't fit
+       
         if pdf.get_y() + row_height > pdf.page_break_trigger:
             pdf.add_page()
         pdf.set_x(pdf.l_margin)
         y_top = pdf.get_y()
 
-        # Draw each cell: bordered rectangle for full row height + wrapped text inside
+        
         for i, col in enumerate(row):
             x_left = pdf.get_x()
             w = col_widths[i]
-            # Border rect for consistent row height
+           
             pdf.rect(x_left, y_top, w, row_height)
-            # Print text with wrapping
+            
             text = '' if col is None else str(col)
             pdf.multi_cell(w, line_height, text, border=0)
-            # Move to right cell
+           
             pdf.set_xy(x_left + w, y_top)
 
-        # Move to next row
+        
         pdf.set_xy(pdf.l_margin, y_top + row_height)
 
     pdf.output(path)
@@ -761,7 +756,7 @@ def report_restock():
         conn = mysql.connection
         cursor = conn.cursor()
 
-        # Helper to convert Decimal → float
+        
         def to_float(val):
             if val is None:
                 return 0.0
@@ -769,7 +764,7 @@ def report_restock():
                 return float(val)
             return float(val)
 
-        # 🔹 Products with sales history
+        
         cursor.execute("""
             SELECT DISTINCT
                 p.product_id,
@@ -798,7 +793,7 @@ def report_restock():
         product_ids = [p['product_id'] for p in products]
         placeholders = ','.join(['%s'] * len(product_ids))
 
-        # 🔹 Monthly sales
+       
         cursor.execute(f"""
             SELECT
                 oi.product_id,
@@ -831,7 +826,7 @@ def report_restock():
             months = monthly_map.get(pid, {}).get("months", [])
             sales = monthly_map.get(pid, {}).get("sales", [])
 
-            # Forecast demand
+           
             forecast_units = 0
             if len(sales) >= 2 and sum(sales) > 0:
                 X = np.array(months).reshape(-1, 1)
@@ -840,18 +835,18 @@ def report_restock():
                 next_m = np.array([[len(months) + 1]])
                 forecast_units = max(int(round(model.predict(next_m)[0])), 0)
 
-            # Avg daily demand
+            
             avg_daily_demand = forecast_units / 30.0 if forecast_units > 0 else max(stock_qty / 30.0, 1)
 
-            # Days on hand
+           
             days_on_hand = round(stock_qty / avg_daily_demand, 2) if avg_daily_demand > 0 else 0
 
-            # Recommended quantity
+           
             recommended_quantity = max(forecast_units, 1)
 
-            # Forecast accuracy (random % for now)
-            forecast_accuracy = random.uniform(60, 90)  # 60%–90%
-            forecast_accuracy = f"{forecast_accuracy:.2f}%"  # format with 2 decimals
+            
+            forecast_accuracy = random.uniform(60, 90)  
+            forecast_accuracy = f"{forecast_accuracy:.2f}%"  
 
             restock_date = (datetime.now() + timedelta(days=max(int(days_on_hand), 1))).date()
 
@@ -862,11 +857,11 @@ def report_restock():
                 restock_date,
                 recommended_quantity,
                 days_on_hand,
-                forecast_accuracy,   # percentage
+                forecast_accuracy,   
                 datetime.now().date()
             ))
 
-        # 🔹 Report columns
+        
         columns = [
             'Product ID', 'Prediction Date', 'Current Stock', 'Restock Date',
             'Recommended Quantity', 'Days On Hand', 'Forecast Accuracy', 'Last Updated'
@@ -907,26 +902,26 @@ def report_seasonal():
             if product_id not in unique_data:  
                 row = list(row)
 
-                # Clean strings
+                
                 for i, cell in enumerate(row):
                     if isinstance(cell, str):
                         cleaned_cell = cell.replace('–', '-').replace('—', '-').replace('…', '...')
                         cleaned_cell = cleaned_cell.encode('latin-1', errors='replace').decode('latin-1')
                         row[i] = cleaned_cell
 
-                # 🔹 Predicted Demand always between 20–60
+               
                 predicted_demand = random.randint(20, 60)
                 row[3] = predicted_demand
 
-                # 🔹 Forecast Accuracy (realistic 60–95)
+               
                 row[4] = round(random.uniform(60, 95), 2)
 
                 unique_data[product_id] = row
 
-        # 🔹 Ascending order by Product ID
+       
         cleaned_rows = [unique_data[pid] for pid in sorted(unique_data.keys())]
 
-        # Generate PDF
+        
         pdf_path = _generate_pdf_report(
             title='Seasonal Forecast Report',
             columns=['Product ID', 'Year', 'Season Type', 'Predicted Demand', 'Forecast Accuracy', 'Peak Season'],
@@ -983,7 +978,7 @@ def report_smart_recommendations():
         cleaned_rows = []
 
         try:
-            # Unique Product IDs, ascending order by product_id
+            
             cursor.execute("""
                 SELECT product_id, product_name, total_sales, gross_sales, gross_margin,
                        inventory_turnover_rate, rank, recommendation
@@ -1021,7 +1016,7 @@ def report_smart_recommendations():
 
         except Exception as table_error:
             print(f"Debug: Smart recommendations table error: {table_error}")
-            # Agar table na ho to live data se generate karein
+           
             cursor.execute("""
                 SELECT p.product_id, p.product_name,
                        COALESCE(SUM(oi.quantity), 0) AS total_sales,
@@ -1106,7 +1101,7 @@ def report_profit_margin_unitwise():
         raw_rows = cursor.fetchall()
         cursor.close()
 
-        # Build formatted rows with calculations
+        
         rows = []
         for (product_id, product_name, unit_type, unit_cost, unit_price, qty_sold) in raw_rows:
             try:
@@ -1145,7 +1140,7 @@ def report_profit_margin_unitwise():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Smart Recommendations
+
 @dss_bp.route('/smart_recommendations', methods=['GET'])
 def smart_recommendations():
     try:
@@ -1153,7 +1148,7 @@ def smart_recommendations():
         from sklearn.preprocessing import MinMaxScaler
         from datetime import datetime
 
-        # fallback FAHP if custom not found
+        
         try:
             from fahp_custom import fahp
         except ImportError:
@@ -1176,7 +1171,7 @@ def smart_recommendations():
         conn = mysql.connection
         cursor = conn.cursor()
 
-        # Get all products with real sales data
+        
         cursor.execute("""
             SELECT 
                 p.product_id, 
@@ -1199,7 +1194,7 @@ def smart_recommendations():
         columns = [desc[0] for desc in cursor.description]
         products = [dict(zip(columns, row)) for row in products]
 
-        # FAHP fuzzy matrix
+        
         fuzzy_matrix = [
             [[1, 1, 1], [1, 2, 3], [3, 4, 5], [2, 3, 4], [1, 2, 3], [2, 3, 4]],
             [[1/3, 1/2, 1], [1, 1, 1], [2, 3, 4], [1, 2, 3], [1, 2, 3], [1, 2, 3]],
@@ -1222,7 +1217,7 @@ def smart_recommendations():
             cost_price = float(p['cost_price'] or 0)
             price = float(p['price'] or 0)
 
-            # KPIs
+           
             avg_inventory = max(0.001, stock_qty / 2)
             gross_margin = round(((gross_sales - cogs) / gross_sales) * 100, 2) if gross_sales > 0 else 0
             itr = round(cogs / avg_inventory, 2) if avg_inventory > 0 else 0
@@ -1245,7 +1240,7 @@ def smart_recommendations():
                 "reason": ""
             })
 
-        # Normalize + score
+        
         X = np.array(decision_matrix, dtype=float)
         scaler = MinMaxScaler()
         X_norm = scaler.fit_transform(X)
@@ -1273,7 +1268,7 @@ def smart_recommendations():
                 product["recommendation"] = "Low Priority"
                 product["reason"] = "Low demand because of margin issues."
 
-        # UPSERT into DB
+        
         upsert_query = """
             INSERT INTO smart_recommendations 
             (product_id, product_name, total_sales, gross_sales, cogs, gross_margin,
@@ -1314,7 +1309,7 @@ def smart_recommendations():
         return jsonify({"error": f"Error: {str(e)}"}), 500
 
 
-# Seasonal Forecasting
+
 
 @dss_bp.route('/seasonal_forecast', methods=['GET'])
 def seasonal_forecast():
@@ -1322,7 +1317,7 @@ def seasonal_forecast():
         conn = mysql.connection
         cursor = conn.cursor()
 
-        # 1️⃣ Fetch historical sales
+        
         query = """
             SELECT p.product_id, p.product_name, o.order_date, oi.quantity, p.stock_quantity
             FROM order_items oi
@@ -1334,7 +1329,7 @@ def seasonal_forecast():
         column_names = [desc[0] for desc in cursor.description]
         sales_data = [dict(zip(column_names, row)) for row in rows]
 
-        # 2️⃣ Group sales by product & by month
+       
         monthly_sales = defaultdict(lambda: defaultdict(int))
         product_names = {}
         stock_quantities = {}
@@ -1352,22 +1347,22 @@ def seasonal_forecast():
             month = order_date.strftime('%Y-%m')
             monthly_sales[product_id][month] += quantity
 
-        # 3️⃣ Helper for smoothing sales
+       
         def smooth(values, window=3):
             return np.convolve(values, np.ones(window)/window, mode='same')
 
         forecast_results = []
-        average_unit_cost = 100.0  # Example cost per unit
+        average_unit_cost = 100.0  
 
         for product_id, sales_by_month in monthly_sales.items():
             sorted_months = sorted(sales_by_month.keys())
             sales_values = np.array([sales_by_month[m] for m in sorted_months], dtype=float)
 
-            # Smooth sales
+            
             smoothed_values = smooth(sales_values, window=3)
             avg_sales = round(np.mean(smoothed_values), 2)
 
-            # Next Month
+           
             last_month = sorted_months[-1]
             year, month = map(int, last_month.split('-'))
             next_month = f"{year + 1}-01" if month == 12 else f"{year}-{str(month + 1).zfill(2)}"
@@ -1376,15 +1371,15 @@ def seasonal_forecast():
 
             actual_demand = sales_values[-1]
 
-            # ✅ Forecast Accuracy
+            
             forecast_accuracy_percentage = round((1 - abs(actual_demand - prediction) / actual_demand) * 100, 2) if actual_demand > 0 else 0.0
 
-            # ✅ Inventory Turnover Rate
+            
             cogs = sum(sales_values) * average_unit_cost
             average_inventory = stock_quantities[product_id] / 2.0 if stock_quantities[product_id] else 1
             inventory_turnover_rate = round(cogs / average_inventory, 2)
 
-            # ✅ Seasonal Pattern
+           
             high_season_months = [m for m in sorted_months if sales_by_month[m] > avg_sales * 1.2]
             if high_season_months:
                 month_names = [calendar.month_name[int(m.split('-')[1])] for m in high_season_months]
@@ -1403,7 +1398,7 @@ def seasonal_forecast():
 
             preparation_start_date = datetime.strptime(sorted_months[0], "%Y-%m").date()
 
-            # ✅ Final Result
+            
             result = {
                 "product_id": product_id,
                 "product_name": product_names[product_id],
@@ -1419,7 +1414,7 @@ def seasonal_forecast():
             }
             forecast_results.append(result)
 
-            # ✅ Save to database with UPSERT to prevent duplicates
+            
             upsert_query = """
                 INSERT INTO seasonal_forecasts 
                 (product_id, year, season_type, predicted_demand, actual_demand, forecast_accuracy,
@@ -1456,14 +1451,14 @@ def seasonal_forecast():
         return jsonify({"error": str(e)}), 500
 
 
-# Customer Purchase Patterns and KPI Analysis
+
 @dss_bp.route('/api/customer_purchase_patterns', methods=['GET'])
 def customer_purchase_patterns():
     try:
         conn = mysql.connection
         cursor = conn.cursor()
 
-        # Get raw order data
+       
         query = """
         SELECT 
             o.customer_id,
@@ -1504,13 +1499,13 @@ def customer_purchase_patterns():
             total_unit_price_sum = sum(d["quantity"] * d["unit_price"] for d in items)
             total_cost_sum = sum(d["quantity"] * d["cost_price"] for d in items)
 
-            # KPIs
+            
             product_sales = total_unit_price_sum
             gross_margin = ((product_sales - total_cost_sum) / product_sales) * 100 if product_sales > 0 else 0
             inventory_turnover_rate = total_cost_sum / 30 if total_cost_sum > 0 else 0
             purchase_frequency = len(items)
 
-            # NEXT PREDICTED PURCHASE DATE
+           
             sorted_dates = sorted(d["order_date"] for d in items)
             if len(sorted_dates) >= 2:
                 days_diff = (sorted_dates[-1] - sorted_dates[-2]).days
@@ -1518,10 +1513,10 @@ def customer_purchase_patterns():
                 days_diff = 30
             next_predicted_purchase_date = sorted_dates[-1] + timedelta(days=days_diff)
 
-            # CONFIDENCE SCORE
+           
             confidence_score = min(100, purchase_frequency * 10)
 
-            # Normalization for FAHP Score
+           
             normalized_frequency = min(purchase_frequency / 10.0, 1.0)  
             normalized_gross_margin = min(gross_margin / 100.0, 1.0)    
             normalized_turnover_rate = min(inventory_turnover_rate / 1000.0, 1.0)  
@@ -1529,7 +1524,7 @@ def customer_purchase_patterns():
 
             results.append({
                 "customer_id": customer_id,
-                "customer_": sequence_number,   # 👈 yahan apna custom sequence aa raha hai
+                "customer_": sequence_number,   
                 "product_ids": ", ".join({str(d["product_id"]) for d in items}),
                 "product_name": ", ".join({d["product_name"] for d in items}),
                 "product_sales": f"{round(product_sales, 2)} PKR",
@@ -1542,7 +1537,7 @@ def customer_purchase_patterns():
                 "fahp_score": f"{round(fahp_score, 4)} (FAHP Index)"
             })
 
-            # Save Results to Database with UPSERT
+            
             upsert_query = """
             INSERT INTO customer_purchase_patterns
             (customer_id, customer_, product_id, product_name, total_quantity_purchased, 
@@ -1563,7 +1558,7 @@ def customer_purchase_patterns():
             """
             cursor.execute(upsert_query, (
                 customer_id,
-                sequence_number,   # 👈 ab DB me bhi sequence save hoga
+                sequence_number,   
                 results[-1]["product_ids"],
                 results[-1]["product_name"],
                 total_quantity,

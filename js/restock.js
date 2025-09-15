@@ -27,7 +27,7 @@ async function fetchRestockData() {
         document.getElementById('restockProductsSection').style.display = 'block';
         showLoading(false);
         
-        // Auto-save to database
+        
         await saveRestockPredictionsToDatabase(restockData);
         
     } catch (error) {
@@ -39,12 +39,12 @@ async function fetchRestockData() {
 
 async function saveRestockPredictionsToDatabase(predictions) {
     try {
-        // Prepare data for auto order
+        
         const orderData = predictions.map(pred => ({
             product_id: pred.product_id,
-            prediction_id: pred.product_id, // Using product_id as prediction_id
+            prediction_id: pred.product_id, 
             recommended_quantity: pred.recommended_quantity,
-            estimated_cost: pred.recommended_quantity * 100 // Assuming average cost of 100 per unit
+            estimated_cost: pred.recommended_quantity * 100 
         }));
         
         const response = await fetch('/api/save_auto_order', {
@@ -82,7 +82,7 @@ function displayRestockProducts(products) {
         return;
     }
     
-    // Sort by urgency (days until restock)
+    
     products.sort((a, b) => a.predicted_days_until_restock - b.predicted_days_until_restock);
     
     products.forEach(product => {
@@ -146,7 +146,7 @@ function updateSelectedProducts() {
         return {
             product_id: productData.product_id,
             name: productData.product_name,
-            price: 100, // Default price - you can modify this
+            price: 100, 
             quantity: productData.recommended_quantity
         };
     });
@@ -166,12 +166,12 @@ function addSelectedToOrder() {
         return;
     }
     
-    // Store selected products in sessionStorage
+    
     sessionStorage.setItem('restockProducts', JSON.stringify(selectedProducts));
     
     showNotification(`${selectedProducts.length} products added to order cart!`, 'success');
     
-    // Redirect to order page after a short delay
+    
     setTimeout(() => {
         window.location.href = '/order';
     }, 1500);
@@ -221,7 +221,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Add CSS for animations
+
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {

@@ -1,6 +1,6 @@
 let products = [];
 
-// Fetch expiry data from Flask backend
+
 async function fetchExpiryAlerts() {
     try {
         const response = await fetch('/expiry_alerts');
@@ -13,11 +13,11 @@ async function fetchExpiryAlerts() {
 
         products = data;
         
-        // Separate expired and expiring products
+        
         const expiredProducts = products.filter(p => p.time_to_expiry < 0);
         const expiringProducts = products.filter(p => p.time_to_expiry >= 0);
         
-        // Show expired products first, then expiring products
+        
         const sortedProducts = [...expiredProducts, ...expiringProducts];
         
         displayProducts(products);
@@ -26,7 +26,7 @@ async function fetchExpiryAlerts() {
     }
 }
 
-// Function to get expiry warning class
+
 function getExpiryWarningClass(daysUntilExpiry) {
     if (daysUntilExpiry < 0) return 'warning-expired';
     if (daysUntilExpiry <= 1) return 'warning-day';
@@ -38,12 +38,12 @@ function getExpiryWarningClass(daysUntilExpiry) {
     return 'warning-safe';
 }
 
-// Function to create product card
+
 function createProductCard(product) {
     const warningClass = getExpiryWarningClass(product.time_to_expiry);
     const imageUrl = product.image_url || 'https://placehold.co/300x200';
 
-    // Determine expiry status text
+    
     const expiryText = product.time_to_expiry < 0 
         ? `EXPIRED ${Math.abs(product.time_to_expiry)} days ago`
         : `Expires in ${product.time_to_expiry} days`;
@@ -64,13 +64,13 @@ function createProductCard(product) {
     `;
 }
 
-// Function to display filtered products
+
 function displayProducts(productsToShow) {
     const container = document.getElementById('productsContainer');
     container.innerHTML = productsToShow.map(product => createProductCard(product)).join('');
 }
 
-// Function to filter products
+
 function filterProducts() {
     const timeFilter = document.getElementById('timeFilter').value;
     const searchText = document.getElementById('searchProduct').value.toLowerCase();
@@ -98,9 +98,9 @@ function filterProducts() {
     displayProducts(filteredProducts);
 }
 
-// Event listeners
+
 document.getElementById('timeFilter').addEventListener('change', filterProducts);
 document.getElementById('searchProduct').addEventListener('input', filterProducts);
 
-// Initial load
+
 window.addEventListener('DOMContentLoaded', fetchExpiryAlerts);

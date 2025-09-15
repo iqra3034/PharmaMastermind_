@@ -7,11 +7,11 @@ from datetime import datetime, timedelta
 
 class EmailService:
     def __init__(self):
-        # Gmail SMTP configuration - you'll need to set these
+        
         self.smtp_server = "smtp.gmail.com"
         self.smtp_port = 587
-        self.email = "iqraraza280@gmail.com"  # Replace with your Gmail
-        self.password = "gjfu klfb ftip piil"  # Replace with your Gmail App Password
+        self.email = "iqraraza280@gmail.com"  
+        self.password = "gjfu klfb ftip piil"  
         
     def generate_verification_code(self):
         """Generate a 6-digit verification code"""
@@ -47,7 +47,7 @@ class EmailService:
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>🏥 PharmaMastermind</h1>
+                        <h1> PharmaMastermind</h1>
                         <p>Welcome to Your Health Partner</p>
                     </div>
                     <div class="content">
@@ -115,7 +115,7 @@ class EmailService:
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>🔐 Password Reset</h1>
+                        <h1>Password Reset</h1>
                         <p>PharmaMastermind Security</p>
                     </div>
                     <div class="content">
@@ -130,7 +130,7 @@ class EmailService:
                         </div>
                         
                         <div class="warning">
-                            <strong>⚠️ Security Notice:</strong>
+                            <strong>Security Notice:</strong>
                             <ul>
                                 <li>This code will expire in 10 minutes</li>
                                 <li>If you didn't request this reset, please ignore this email</li>

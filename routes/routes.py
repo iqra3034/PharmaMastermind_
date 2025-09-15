@@ -1,9 +1,9 @@
-# routes/routes.py
+
 from flask import Blueprint, render_template, send_from_directory, session, redirect, url_for
 
 routes = Blueprint('routes', __name__)
 
-# ==================== Auth Pages =====================
+
 @routes.route('/signup')
 def signup():
     return render_template('SignUp.html')
@@ -24,7 +24,6 @@ def verification():
 def reset_password_page():
     return render_template('reset-password.html')
 
-# ==================== Dashboards =====================
 @routes.route('/dashboard')
 def dashboard():
     role = session.get("role")
@@ -50,7 +49,7 @@ def customerdashboard():
         return render_template("customerdashboard.html")
     return "Unauthorized access", 403
 
-# ==================== Admin-only Pages =====================
+
 @routes.route('/admininventory')
 def inventory():
     if session.get("role") != "admin":
@@ -87,7 +86,7 @@ def customer_profile():
         return "Unauthorized access", 403
     return render_template("customerprofile.html")
 
-# ==================== Owner/Admin User Management =====================
+
 @routes.route('/adminusers')
 def admin_users():
     role = session.get("role")
@@ -95,7 +94,7 @@ def admin_users():
         return "Unauthorized access", 403
     return render_template("adminusers.html")
 
-# ==================== Employee Pages =====================
+
 @routes.route('/pos')
 def point_of_sale():
     if session.get("role") not in ["employee", "admin"]:
@@ -132,7 +131,7 @@ def payment():
         return "Unauthorized access", 403
     return send_from_directory('payment', 'index.html')
 
-# ==================== Static File Routes =====================
+
 @routes.route('/css/<path:filename>')
 def send_css(filename):
     return send_from_directory('css', filename)

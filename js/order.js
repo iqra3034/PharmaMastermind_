@@ -1,6 +1,5 @@
 let cart = [];
 
-// Load products from sessionStorage on page load
 window.onload = function() {
     fetchProducts();
     loadStoredProducts();
@@ -26,7 +25,7 @@ function loadStoredProducts() {
     }
 }
 
-// Fetch products from API
+
 async function fetchProducts() {
     try {
         const res = await fetch("/api/products");
@@ -37,7 +36,7 @@ async function fetchProducts() {
     }
 }
 
-// Display products on page
+
 function displayProducts(products) {
     const productList = document.getElementById("product-list");
     productList.innerHTML = "";
@@ -57,7 +56,7 @@ function displayProducts(products) {
     });
 }
 
-// Add to cart
+
 function addToCart(name, price) {
     const existing = cart.find(item => item.name === name);
     if (existing) {
@@ -68,7 +67,7 @@ function addToCart(name, price) {
     updateCartDisplay();
 }
 
-// Update cart display
+
 function updateCartDisplay() {
     const orderList = document.getElementById("order-list");
     const subtotalElem = document.getElementById("subtotal");
@@ -93,13 +92,13 @@ function updateCartDisplay() {
     totalElem.textContent = `${total} Pkr`;
 }
 
-// Clear cart
+
 document.getElementById("clear-cart").addEventListener("click", () => {
     cart = [];
     updateCartDisplay();
 });
 
-// Confirm order
+
 document.getElementById("confirm-order").addEventListener("click", async () => {
     if (cart.length === 0) {
         showPopup("Cart is empty.", true);
@@ -138,7 +137,7 @@ document.getElementById("confirm-order").addEventListener("click", async () => {
     }
 });
 
-// Popup function
+
 function showPopup(message, isError = false) {
     const popup = document.createElement("div");
     popup.className = "popup-message";
@@ -146,10 +145,10 @@ function showPopup(message, isError = false) {
     popup.textContent = message;
     document.body.appendChild(popup);
 
-    // Show smoothly
+    
     setTimeout(() => popup.classList.add("popup-show"), 10);
 
-    // Hide after 3s
+    
     setTimeout(() => {
         popup.classList.remove("popup-show");
         setTimeout(() => popup.remove(), 300);

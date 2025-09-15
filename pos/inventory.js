@@ -224,7 +224,7 @@ async function editProduct(productId) {
         previewImage.style.display = 'block';
     }
 
-    // Mark form as edit mode
+    
     document.getElementById('addProductForm').setAttribute('data-edit-id', productId);
 }
 

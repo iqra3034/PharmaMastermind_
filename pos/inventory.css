@@ -8,8 +8,6 @@
 body {
     background-color: #f5f6fa;
 }
-
-/* Navbar Styling */
 .navbar {
     background-color: white;
     padding: 1rem 2rem;
@@ -196,7 +194,7 @@ th {
     display: inline-block;
 }
 
-/* Modal Styles */
+
 .modal {
     display: none;
     position: fixed;

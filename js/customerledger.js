@@ -1,24 +1,23 @@
 let customerLedgerData = [];
 let filteredLedgerData = [];
 
-// Open Customer Ledger Modal
+
 function openCustomerLedger(customerId) {
     const modal = document.getElementById('customerLedgerModal');
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
     
-    // Fetch ledger data for the customer
+    
     fetchCustomerLedger(customerId);
 }
 
-// Close Customer Ledger Modal
+
 function closeCustomerLedger() {
     const modal = document.getElementById('customerLedgerModal');
     modal.style.display = 'none';
     document.body.style.overflow = 'auto';
 }
 
-// Fetch Customer Ledger Data
 async function fetchCustomerLedger(customerId) {
     try {
         showLedgerLoading(true);
@@ -33,13 +32,12 @@ async function fetchCustomerLedger(customerId) {
         customerLedgerData = data.transactions || [];
         filteredLedgerData = [...customerLedgerData];
         
-        // Update customer info in header
+        
         updateLedgerHeader(data.customer_info);
         
-        // Update summary
         updateLedgerSummary(data.summary);
         
-        // Display transactions
+
         displayLedgerTransactions(filteredLedgerData);
         
         showLedgerLoading(false);
@@ -51,7 +49,7 @@ async function fetchCustomerLedger(customerId) {
     }
 }
 
-// Update Ledger Header
+
 function updateLedgerHeader(customerInfo) {
     const headerTitle = document.querySelector('.ledger-header h2');
     if (customerInfo) {
@@ -61,7 +59,6 @@ function updateLedgerHeader(customerInfo) {
     }
 }
 
-// Update Ledger Summary
 function updateLedgerSummary(summary) {
     if (!summary) return;
     
@@ -71,7 +68,6 @@ function updateLedgerSummary(summary) {
     document.getElementById('endingBalance').textContent = `Rs. ${summary.ending_balance.toFixed(2)}`;
 }
 
-// Display Ledger Transactions
 function displayLedgerTransactions(transactions) {
     const tbody = document.getElementById('ledgerTableBody');
     tbody.innerHTML = '';
@@ -91,13 +87,13 @@ function displayLedgerTransactions(transactions) {
     transactions.forEach(transaction => {
         const row = document.createElement('tr');
         
-        // Format date
+        
         const date = new Date(transaction.date).toLocaleDateString('en-GB');
         
-        // Determine transaction type class
+        
         const transTypeClass = transaction.trans_type.toLowerCase().replace(/[^a-z]/g, '-');
         
-        // Format amounts
+        
         const creditAmount = transaction.credit_amount > 0 ? transaction.credit_amount.toFixed(2) : '0';
         const debitAmount = transaction.debit_amount > 0 ? transaction.debit_amount.toFixed(2) : '0';
         const balance = transaction.balance.toFixed(2);
@@ -124,7 +120,7 @@ function displayLedgerTransactions(transactions) {
     });
 }
 
-// Filter Ledger Data
+
 function filterLedgerData() {
     const dateFrom = document.getElementById('dateFrom').value;
     const dateTo = document.getElementById('dateTo').value;
@@ -132,7 +128,7 @@ function filterLedgerData() {
     const searchTerm = document.getElementById('searchLedger').value.toLowerCase();
     
     filteredLedgerData = customerLedgerData.filter(transaction => {
-        // Date filter
+        
         const transDate = new Date(transaction.date);
         const fromDate = dateFrom ? new Date(dateFrom) : null;
         const toDate = dateTo ? new Date(dateTo) : null;
@@ -140,10 +136,10 @@ function filterLedgerData() {
         if (fromDate && transDate < fromDate) return false;
         if (toDate && transDate > toDate) return false;
         
-        // Transaction type filter
+        
         if (transType && transaction.trans_type !== transType) return false;
         
-        // Search filter
+        
         if (searchTerm) {
             const searchFields = [
                 transaction.item_name,
@@ -162,7 +158,7 @@ function filterLedgerData() {
     updateFilteredSummary();
 }
 
-// Update Summary for Filtered Data
+
 function updateFilteredSummary() {
     const summary = {
         opening_balance: 0,
@@ -183,9 +179,9 @@ function updateFilteredSummary() {
     updateLedgerSummary(summary);
 }
 
-// Export Functions
+
 function exportLedgerToPDF() {
-    // Create a simple PDF export
+    
     const printWindow = window.open('', '_blank');
     const customer = document.querySelector('.ledger-header h2').textContent;
     
@@ -263,7 +259,7 @@ function exportLedgerToPDF() {
 }
 
 function exportLedgerToExcel() {
-    // Create CSV data
+    
     let csvContent = "Date,Inv.No,Trans Type,Item Name,Description,Qty,Rate,Credit Amount,Debit Amount,Balance,DR/CR\n";
     
     filteredLedgerData.forEach(transaction => {
@@ -274,7 +270,7 @@ function exportLedgerToExcel() {
         csvContent += `"${date}","${transaction.inv_no || ''}","${transaction.trans_type}","${transaction.item_name || ''}","${transaction.description || ''}","${transaction.qty || ''}","${transaction.rate || ''}","${creditAmount}","${debitAmount}","${transaction.balance.toFixed(2)}","${transaction.dr_cr}"\n`;
     });
     
-    // Create and download file
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -286,7 +282,6 @@ function exportLedgerToExcel() {
     document.body.removeChild(link);
 }
 
-// Utility Functions
 function showLedgerLoading(show) {
     const tbody = document.getElementById('ledgerTableBody');
     if (show) {
@@ -315,15 +310,14 @@ function showLedgerError(message) {
     `;
 }
 
-// Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
-    // Filter event listeners
+    
     document.getElementById('dateFrom').addEventListener('change', filterLedgerData);
     document.getElementById('dateTo').addEventListener('change', filterLedgerData);
     document.getElementById('transTypeFilter').addEventListener('change', filterLedgerData);
     document.getElementById('searchLedger').addEventListener('input', filterLedgerData);
     
-    // Close modal when clicking outside
+    
     window.addEventListener('click', function(event) {
         const modal = document.getElementById('customerLedgerModal');
         if (event.target === modal) {

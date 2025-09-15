@@ -105,16 +105,7 @@ body {
     overflow-y: auto; 
 }
 
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 40px;
-    padding: 8px;
-    background: var(--text-light);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
-}
+
 
 .search-bar {
     display: flex;

@@ -8,7 +8,6 @@ body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
-/* Navbar Styling */
 .navbar {
     background-color: white;
     padding: 1rem 2rem;
@@ -65,7 +64,6 @@ body {
     color: white;
 }
 
-/* Enhanced Cards */
 .card {
     border: none;
     border-radius: 12px;
@@ -93,7 +91,7 @@ body {
     padding: 1.5rem;
 }
 
-/* Enhanced Tables */
+
 .table {
     margin: 0;
 }
@@ -124,7 +122,6 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* Enhanced Form Elements */
 .form-select, .form-control {
     border: 1px solid #e2e8f0;
     padding: 0.6rem 1rem;
@@ -146,7 +143,7 @@ body {
 
 }
 
-/* Enhanced Buttons */
+
 .btn {
     padding: 0.6rem 1.2rem;
     font-weight: 500;
@@ -183,7 +180,7 @@ body {
     font-size: 0.875rem;
 }
 
-/* Enhanced Billing Summary */
+
 .billing-summary {
     border-top: 1px solid #e2e8f0;
     padding-top: 1.5rem;
@@ -204,7 +201,6 @@ body {
     color: #0e7490;
 }
 
-/* Remove Item Button */
 .remove-item {
     color: #ef4444;
     cursor: pointer;
@@ -220,7 +216,7 @@ body {
     background-color: rgba(239, 68, 68, 0.1);
 }
 
-/* Search Section */
+
 .search-section {
     background-color: #f8fafc;
     padding: 1rem;
@@ -229,7 +225,7 @@ body {
     
 }
 
-/* Responsive Adjustments */
+
 @media (max-width: 768px) {
     .card-header {
         padding: 1rem;
@@ -244,7 +240,7 @@ body {
     }
 }
 
-/* Popup Toast Messages */
+
 #popupMessage {
     position: fixed;
     top: 20px;
@@ -261,7 +257,7 @@ body {
     cursor: default;
 }
 
-/* Success Toast */
+
 #popupMessage.success {
     background-color: #28a745;
 }

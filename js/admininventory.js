@@ -1,4 +1,4 @@
-// Fetch inventory data from Flask API
+
 function fetchInventory() {
     fetch('/api/products')
         .then(response => response.json())
@@ -10,10 +10,10 @@ function fetchInventory() {
         });
 }
 
-// Display inventory cards
+
 function displayInventory(inventory) {
     const inventoryGrid = document.getElementById('inventoryGrid');
-    inventoryGrid.innerHTML = ''; // Clear previous content
+    inventoryGrid.innerHTML = ''; 
 
     inventory.forEach(item => {
         const card = document.createElement('div');
@@ -35,7 +35,7 @@ function displayInventory(inventory) {
     });
 }
 
-// Show product details in modal
+
 function showProductDetails(product) {
     const modal = document.getElementById('productModal');
     const modalBody = modal.querySelector('.modal-body');
@@ -58,11 +58,11 @@ function showProductDetails(product) {
 
     modal.style.display = 'block';
 
-    // Close modal on close button
+    
     const closeBtn = modal.querySelector('.close-modal');
     closeBtn.onclick = () => modal.style.display = 'none';
 
-    // Close modal on outside click
+   
     window.onclick = (event) => {
         if (event.target === modal) {
             modal.style.display = 'none';
@@ -70,7 +70,7 @@ function showProductDetails(product) {
     };
 }
 
-// On page load
+
 document.addEventListener('DOMContentLoaded', () => {
     fetchInventory();
     setupNewEventListeners();
@@ -90,7 +90,7 @@ async function addExpiryProductsToOrder() {
             throw new Error(expiryData.error);
         }
         
-        // Filter products expiring within 30 days
+       
         const urgentExpiry = expiryData.filter(product => product.time_to_expiry <= 30);
         
         if (urgentExpiry.length === 0) {
@@ -98,19 +98,19 @@ async function addExpiryProductsToOrder() {
             return;
         }
         
-        // Convert to order format
+       
         const orderProducts = urgentExpiry.map(product => ({
             name: product.product_name,
-            price: 100, // Default price - you can modify this
-            quantity: 10 // Default quantity for expiry products
+            price: 100, 
+            quantity: 10 
         }));
         
-        // Store in sessionStorage
+        
         sessionStorage.setItem('expiryProducts', JSON.stringify(orderProducts));
         
         showNotification(`${urgentExpiry.length} expiry products added to order cart!`, 'success');
         
-        // Redirect to order page
+        
         setTimeout(() => {
             window.location.href = '/order';
         }, 1500);
@@ -130,7 +130,7 @@ async function addRestockProductsToOrder() {
             throw new Error(restockData.error);
         }
         
-        // Filter urgent restock products (within 14 days)
+        
         const urgentRestock = restockData.filter(product => product.predicted_days_until_restock <= 14);
         
         if (urgentRestock.length === 0) {
@@ -138,19 +138,19 @@ async function addRestockProductsToOrder() {
             return;
         }
         
-        // Convert to order format
+       
         const orderProducts = urgentRestock.map(product => ({
             name: product.product_name,
-            price: 150, // Default price for restock
+            price: 150, 
             quantity: product.recommended_quantity
         }));
         
-        // Store in sessionStorage
+        
         sessionStorage.setItem('restockProducts', JSON.stringify(orderProducts));
         
         showNotification(`${urgentRestock.length} restock products added to order cart!`, 'success');
         
-        // Redirect to order page
+        
         setTimeout(() => {
             window.location.href = '/order';
         }, 1500);

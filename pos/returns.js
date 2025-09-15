@@ -9,7 +9,7 @@ document.getElementById('invoice-form').addEventListener('submit', function(even
         return;
     }
     
-    // Fetch invoice details
+   
     fetchInvoiceForReturn(invoiceNumber);
 });
 
@@ -40,7 +40,7 @@ async function fetchInvoiceForReturn(invoiceNumber) {
 function setupReturnForm(invoiceData) {
     const { order, items } = invoiceData;
     
-    // Generate return ID and set dates
+   
     const returnId = 'RET' + Date.now();
     const returnDate = new Date().toLocaleDateString();
     
@@ -48,7 +48,7 @@ function setupReturnForm(invoiceData) {
     document.getElementById('return-date').textContent = returnDate;
     document.getElementById('against-invoice').textContent = order.order_id;
     
-    // Show invoice details
+    
     const invoiceDetails = document.getElementById('invoice-details');
     invoiceDetails.innerHTML = `
         <h4>Invoice Details</h4>
@@ -58,7 +58,7 @@ function setupReturnForm(invoiceData) {
         <p><strong>Payment Method:</strong> ${order.payment_method || 'Cash'}</p>
     `;
     
-    // Populate product dropdown
+    
     const productSelect = document.getElementById('product');
     productSelect.innerHTML = '<option value="">Select Product</option>';
     
@@ -74,7 +74,7 @@ function setupReturnForm(invoiceData) {
         productSelect.appendChild(option);
     });
     
-    // Show return form
+    
     document.getElementById('claim-invoice').classList.add('hidden');
     document.getElementById('process-return').classList.remove('hidden');
 }
@@ -86,7 +86,7 @@ function updateProductDetails() {
     if (selectedValue) {
         const productData = JSON.parse(selectedValue);
         
-        // Set max quantity and price
+        
         document.getElementById('quantity').max = productData.quantity;
         document.getElementById('quantity').value = 1;
         document.getElementById('price').value = productData.unit_price;
@@ -122,7 +122,7 @@ function decreaseQuantity() {
     }
 }
 
-// Handle return form submission
+
 document.getElementById('return-form').addEventListener('submit', async function(event) {
     event.preventDefault();
     
@@ -167,7 +167,7 @@ document.getElementById('return-form').addEventListener('submit', async function
         if (result.success) {
             showNotification('Return processed successfully!', 'success');
             
-            // Reset form after successful return
+            
             setTimeout(() => {
                 document.getElementById('process-return').classList.add('hidden');
                 document.getElementById('claim-invoice').classList.remove('hidden');
@@ -219,7 +219,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Add CSS for animations
+
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {

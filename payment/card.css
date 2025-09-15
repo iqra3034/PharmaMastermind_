@@ -1,4 +1,4 @@
-/* Credit Card Component */
+
 .card-container {
   perspective: 1000px;
   margin-bottom: var(--spacing-xl);
@@ -143,7 +143,6 @@
   text-align: center;
 }
 
-/* Card animations */
 @keyframes cardNumberEffect {
   0% { transform: translateY(0); opacity: 1; }
   20% { transform: translateY(-10px); opacity: 0; }

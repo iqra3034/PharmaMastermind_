@@ -97,27 +97,27 @@ async function handleApproval(approvalId, action) {
     const approval = pendingApprovals.find(a => a.id === approvalId);
     if (!approval) return;
 
-    // Set modal content dynamically
+    
     const modal = document.getElementById('confirmationModal');
     const modalTitle = document.getElementById('modalTitle');
     const modalMessage = document.getElementById('modalMessage');
 
    
 
-    // Show modal
+    
     modal.style.display = 'flex';
 
     const okBtn = document.getElementById('okBtn');
     const cancelBtn = document.getElementById('cancelBtn');
 
-    // Remove old listeners to avoid duplication
+    
     okBtn.replaceWith(okBtn.cloneNode(true));
     cancelBtn.replaceWith(cancelBtn.cloneNode(true));
 
     const newOkBtn = document.getElementById('okBtn');
     const newCancelBtn = document.getElementById('cancelBtn');
 
-    // OK button → Proceed with approval/rejection
+    
     newOkBtn.addEventListener('click', async () => {
         modal.style.display = 'none';
 
@@ -141,7 +141,7 @@ async function handleApproval(approvalId, action) {
                     action === 'approve' ? 'success' : 'info'
                 );
 
-                // Refresh list after approval/rejection
+               
                 fetchPendingApprovals();
             } else {
                 showNotification(result.message || `Failed to ${action} user`, 'error');
@@ -152,7 +152,7 @@ async function handleApproval(approvalId, action) {
         }
     });
 
-    // Cancel button → Close modal
+    
     newCancelBtn.addEventListener('click', () => {
         modal.style.display = 'none';
     });
@@ -196,7 +196,7 @@ function showNotification(message, type = 'info') {
     }, 4000);
 }
 
-// Add CSS for animations
+
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {

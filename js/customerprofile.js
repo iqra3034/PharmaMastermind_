@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadUserProfile();
     loadOrderHistory();
     
-    // Form submissions
+    
     document.getElementById('profileForm').addEventListener('submit', updateProfile);
     document.getElementById('passwordForm').addEventListener('submit', changePassword);
 });
@@ -15,7 +15,7 @@ async function loadUserProfile() {
         const userData = await response.json();
         
         if (userData.user_id) {
-            // Fetch detailed user information
+            
             const userResponse = await fetch(`/api/user/${userData.user_id}`, {
                 credentials: 'include'
             });

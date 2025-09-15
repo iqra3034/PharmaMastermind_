@@ -271,7 +271,7 @@
 
     emailInput.addEventListener("input", () => {
       const emailValue = emailInput.value.trim();
-      const emailRegex = /^[^\s@]+@(gmail\.com|yahoo\.com)$/i; // sirf gmail & yahoo allow
+      const emailRegex = /^[^\s@]+@(gmail\.com|yahoo\.com)$/i; 
       if (!emailValue) {
         emailError.textContent = "Email is required.";
       } else if (!emailRegex.test(emailValue)) {
