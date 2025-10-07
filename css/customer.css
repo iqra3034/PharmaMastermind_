@@ -434,3 +434,42 @@ body {
         font-size: 0.9rem;
     }
 }
+
+/* 📟 Tablets (landscape) */
+@media (max-width: 1024px) {
+    .container {
+        padding: 1.5rem;
+    }
+
+    .product-container {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+
+    .card-header h5 {
+        font-size: 1.1rem;
+    }
+
+    .product-card img {
+        height: 150px;
+    }
+}
+
+/* 📱 Very small mobile screens */
+@media (max-width: 400px) {
+    .navbar-custom h2 {
+        font-size: 1rem;
+    }
+
+    .product-container {
+        grid-template-columns: 1fr;
+    }
+
+    .product-card img {
+        height: 120px;
+    }
+
+    .add-btn, .btn, .payment-btn {
+        font-size: 0.85rem;
+        padding: 0.6rem;
+    }
+}

@@ -249,3 +249,107 @@ header {
 .generate-report i{
     font-size: 20px;
 }
+
+/* 🌐 Responsive Design */
+
+/* Tablets (portrait + landscape) */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 220px;
+    }
+
+    .main-content {
+        margin-left: 220px;
+        padding: 20px;
+    }
+
+    .inventory-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+}
+
+/* 📱 Mobile Screens */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+        overflow-x: hidden;
+    }
+
+    /* Sidebar mobile view */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 70%;
+        height: 100%;
+        background: #fff;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        padding-top: 80px;
+        box-shadow: var(--shadow-md);
+        border-radius: 0;
+        transition: all 0.4s ease;
+        z-index: 999;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .menu-toggle {
+        position: fixed;
+        top: 18px;
+        left: 20px;
+        font-size: 1.8rem;
+        color: var(--text-primary);
+        cursor: pointer;
+        z-index: 1000;
+    }
+
+    .main-content {
+        margin-left: 0;
+        margin-top: 70px;
+        padding: 16px;
+        width: 100%;
+    }
+
+    /* Inventory grid for small screens */
+    .inventory-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        justify-items: center;
+        gap: 16px;
+    }
+
+    .product-card {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .product-detail-header {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .product-detail-meta {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 💻 Tablets only */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: 220px;
+    }
+
+    .main-content {
+        margin-left: 220px;
+        padding: 20px;
+    }
+
+    .inventory-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+}
+

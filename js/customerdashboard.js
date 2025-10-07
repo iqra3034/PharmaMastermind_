@@ -3,43 +3,26 @@ let allOrders = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     fetchCustomerData();
-    
-    
     document.getElementById('searchCustomer').addEventListener('input', filterCustomers);
     document.getElementById('sortBy').addEventListener('change', sortCustomers);
-    
-    
-    document.querySelector('.close-modal').addEventListener('click', closeModal);
     window.addEventListener('click', function(event) {
         const modal = document.getElementById('customerModal');
-        if (event.target === modal) {
-            closeModal();
-        }
+        if (event.target === modal) closeModal();
     });
 });
 
 async function fetchCustomerData() {
     try {
-        
         const [usersResponse, ordersResponse] = await Promise.all([
             fetch('/api/customers'),
             fetch('/api/customer-orders')
         ]);
-        
-        if (!usersResponse.ok || !ordersResponse.ok) {
-            throw new Error('Failed to fetch data');
-        }
-        
+        if (!usersResponse.ok || !ordersResponse.ok) throw new Error('Failed to fetch data');
         const users = await usersResponse.json();
         allOrders = await ordersResponse.json();
-        
-        
         customers = processCustomerData(users, allOrders);
-        
-      
         updateStatistics();
         displayCustomers(customers);
-        
     } catch (error) {
         console.error('Error fetching customer data:', error);
         showNotification('Error loading customer data', 'error');
@@ -48,8 +31,6 @@ async function fetchCustomerData() {
 
 function processCustomerData(users, orders) {
     const customerMap = new Map();
-    
-    
     users.forEach(user => {
         if (user.role === 'customer') {
             customerMap.set(user.id, {
@@ -64,22 +45,18 @@ function processCustomerData(users, orders) {
             });
         }
     });
-    
-    
     orders.forEach(order => {
         if (order.customer_id && customerMap.has(order.customer_id)) {
             const customer = customerMap.get(order.customer_id);
             customer.totalOrders++;
             customer.totalSpent += parseFloat(order.total_amount || 0);
             customer.orders.push(order);
-            
             const orderDate = new Date(order.order_date);
             if (!customer.lastOrderDate || orderDate > customer.lastOrderDate) {
                 customer.lastOrderDate = orderDate;
             }
         }
     });
-    
     return Array.from(customerMap.values());
 }
 
@@ -88,7 +65,6 @@ function updateStatistics() {
     const totalOrders = allOrders.length;
     const totalRevenue = allOrders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    
     document.getElementById('totalCustomers').textContent = totalCustomers;
     document.getElementById('totalOrders').textContent = totalOrders;
     document.getElementById('totalRevenue').textContent = `Rs. ${totalRevenue.toFixed(2)}`;
@@ -98,12 +74,10 @@ function updateStatistics() {
 function displayCustomers(customersToShow) {
     const tbody = document.getElementById('customerTableBody');
     tbody.innerHTML = '';
-    
     if (customersToShow.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #666;">No customers found</td></tr>';
         return;
     }
-    
     customersToShow.forEach(customer => {
         const row = document.createElement('tr');
         row.style.borderBottom = '1px solid #eee';
@@ -168,20 +142,16 @@ function sortCustomers() {
 async function viewCustomerDetails(customerId) {
     const customer = customers.find(c => c.id === customerId);
     if (!customer) return;
-    
     try {
-        
         const response = await fetch(`/api/customer-order-details/${customerId}`);
         const orderDetails = await response.json();
-        
         const modal = document.getElementById('customerModal');
         const modalBody = document.getElementById('modalBody');
-        
         modalBody.innerHTML = `
+            <span id="closeModalBtn" style="position:absolute; top:15px; right:20px; font-size:24px; cursor:pointer;">&times;</span>
             <h2 style="color: var(--primary-color); margin-bottom: 20px;">
                 <i class="fas fa-user"></i> ${customer.name} - Customer Details
             </h2>
-            
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
                 <div style="background: var(--background-light); padding: 20px; border-radius: 8px;">
                     <h4><i class="fas fa-envelope"></i> Contact Information</h4>
@@ -196,15 +166,14 @@ async function viewCustomerDetails(customerId) {
                     <p><strong>Average Order:</strong> Rs. ${customer.totalOrders > 0 ? (customer.totalSpent / customer.totalOrders).toFixed(2) : '0.00'}</p>
                 </div>
             </div>
-            
             <h3 style="margin-bottom: 20px;"><i class="fas fa-shopping-cart"></i> Order History</h3>
             <div style="max-height: 400px; overflow-y: auto;">
                 ${generateOrderHistoryHTML(orderDetails)}
             </div>
         `;
-        
         modal.style.display = 'block';
-        
+        document.getElementById('closeModalBtn').onclick = () => { modal.style.display = 'none'; };
+        window.onclick = (event) => { if (event.target === modal) modal.style.display = 'none'; };
     } catch (error) {
         console.error('Error fetching customer details:', error);
         showNotification('Error loading customer details', 'error');
@@ -215,7 +184,6 @@ function generateOrderHistoryHTML(orderDetails) {
     if (!orderDetails || orderDetails.length === 0) {
         return '<p style="text-align: center; color: #666; padding: 20px;">No orders found for this customer.</p>';
     }
-    
     let html = '<table style="width: 100%; border-collapse: collapse;">';
     html += `
         <thead>
@@ -229,17 +197,10 @@ function generateOrderHistoryHTML(orderDetails) {
         </thead>
         <tbody>
     `;
-    
     orderDetails.forEach(order => {
-        console.log("Order data:", order); 
-
         const orderDate = new Date(order.order_date).toLocaleDateString();
-        const products = order.items ? order.items.map(item => 
-            `${item.product_name} (${item.quantity}x)`
-        ).join(', ') : 'No items';
-
-        const paymentStatus = order.payment_status || 'N/A'; 
-
+        const products = order.items ? order.items.map(item => `${item.product_name} (${item.quantity}x)`).join(', ') : 'No items';
+        const paymentStatus = order.payment_status || 'N/A';
         html += `
             <tr style="border-bottom: 1px solid #eee;">
                 <td style="padding: 12px; border: 1px solid #ddd;">#${order.order_id}</td>
@@ -254,7 +215,6 @@ function generateOrderHistoryHTML(orderDetails) {
             </tr>
         `;
     });
-
     html += '</tbody></table>';
     return html;
 }
@@ -269,7 +229,6 @@ function refreshCustomerData() {
 }
 
 function showNotification(message, type = 'info') {
-    
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
@@ -283,13 +242,47 @@ function showNotification(message, type = 'info') {
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     `;
     notification.textContent = message;
-    
     document.body.appendChild(notification);
-    
-    
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
-        }
-    }, 3000);
+    setTimeout(() => { if (notification.parentNode) notification.remove(); }, 3000);
 }
+
+// Close Customer Details Modal
+document.addEventListener("DOMContentLoaded", () => {
+    const modal = document.getElementById("customerModal");
+    const closeBtn = document.querySelector(".close-modal");
+
+    if (closeBtn && modal) {
+        closeBtn.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+    }
+
+    window.addEventListener("click", (event) => {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+});
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const menuToggle = document.querySelector('.menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.createElement('div');
+    overlay.classList.add('overlay');
+    document.body.appendChild(overlay);
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('active');
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+    });
+});
+
+const sidebar = document.querySelector('.sidebar');
+const main = document.querySelector('.main-content');
+document.querySelector('.toggle-btn').addEventListener('click', () => {
+  sidebar.classList.toggle('collapsed');
+});

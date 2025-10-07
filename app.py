@@ -1667,30 +1667,42 @@ def save_auto_order():
         return jsonify({"success": False, "message": str(e)}), 500
 
 
-
 @app.route('/employees/add', methods=['POST'])
 def add_employee():
     data = request.get_json()
     try:
-        print("Received data:", data)  
+        print("Received data:", data)
         cursor = mysql.connection.cursor()
         cursor.execute("""
             INSERT INTO employees 
             (employee_id, name, email, phone, cnic, emergency, role, salary) 
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            data['id'], data['name'], data['email'], data['phone'],
-            data['cnic'], data['emergency_contact'],  
-            data['role'], data['salary']
+            data.get('id'),
+            data.get('name'),
+            data.get('email'),
+            data.get('phone'),
+            data.get('cnic'),
+            data.get('emergency_contact'),
+            data.get('role'),
+            data.get('salary')
         ))
         mysql.connection.commit()
         cursor.close()
-        return jsonify({'status': 'success'}), 200
+        return jsonify({
+            'status': 'success',
+            'message': 'Employee added successfully!'
+        }), 200
+
     except Exception as e:
-        print("Error:", e)
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+        print("Error while adding employee:", e)
+        return jsonify({
+            'status': 'error',
+            'message': f'Error: {str(e)}'
+        }), 500
 
 
+# --- Get Employees ---
 @app.route('/api/employees', methods=['GET'])
 def get_employees():
     try:
@@ -1705,7 +1717,7 @@ def get_employees():
         return jsonify({'error': str(e)}), 500
 
 
-
+# --- Update Employee ---
 @app.route('/api/employees/<string:emp_id>', methods=['PUT'])
 def update_employee(emp_id):
     try:
@@ -1724,14 +1736,13 @@ def update_employee(emp_id):
         cur.execute(query, values)
         mysql.connection.commit()
         cur.close()
-        return jsonify({'message': 'Employee updated successfully'})
+        return jsonify({'status': 'success', 'message': 'Employee updated successfully'})
     except Exception as e:
         print("Update error:", e)
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
-
-
+# --- Delete Employee ---
 @app.route('/api/employees/<string:emp_id>', methods=['DELETE'])
 def delete_employee(emp_id):
     try:
@@ -1739,10 +1750,10 @@ def delete_employee(emp_id):
         cur.execute("DELETE FROM employees WHERE employee_id = %s", (emp_id,))
         mysql.connection.commit()
         cur.close()
-        return jsonify({'message': 'Employee deleted successfully'})
+        return jsonify({'status': 'success', 'message': 'Employee deleted successfully'})
     except Exception as e:
         print("Delete error:", e)
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 if __name__ == "__main__":
