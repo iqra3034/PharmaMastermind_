@@ -546,10 +546,11 @@ def update_profile():
             return jsonify({"success": False, "message": "Not authenticated"}), 401
         
         data = request.get_json()
+        print("Updating user with ID:", user_id)
         
         cur = mysql.connection.cursor()
         cur.execute("""
-            UPDATE users SET 
+            UPDATE customer SET 
                 first_name = %s, 
                 last_name = %s, 
                 phone = %s, 
@@ -557,7 +558,7 @@ def update_profile():
                 address = %s, 
                 city = %s, 
                 postal_code = %s
-            WHERE id = %s
+             WHERE user_id = %s 
         """, (
             data.get('first_name'),
             data.get('last_name'),
@@ -566,7 +567,7 @@ def update_profile():
             data.get('address'),
             data.get('city'),
             data.get('postal_code'),
-            user_id
+            session['user_id']
         ))
         mysql.connection.commit()
         cur.close()
