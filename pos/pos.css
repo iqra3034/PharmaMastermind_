@@ -286,9 +286,7 @@ body {
   display: none;
 }
 
-/* ---------------- RESPONSIVE DESIGN ---------------- */
 
-/* For tablets (screen width up to 992px) */
 @media (max-width: 992px) {
 
   .navbar {
@@ -326,7 +324,6 @@ body {
   }
 }
 
-/* For mobile phones (screen width up to 768px) */
 @media (max-width: 768px) {
 
    .menu-toggle {
@@ -352,7 +349,7 @@ body {
   background-color: white;
   padding: 0.8rem 1rem;
   display: flex;
-  justify-content: space-between; /* logo left, toggle right */
+  justify-content: space-between; 
   align-items: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   position: relative;
@@ -362,8 +359,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  justify-content: flex-start;   /* 👈 logo left side hi rahe */
-  margin-right: auto;            /* 👈 ye ensure karega ke wo kabhi center na aaye */
+  justify-content: flex-start;   
 }
 
 .logo-img {
@@ -393,8 +389,6 @@ body {
   }
 }
 
-
-  /* Hide nav links initially */
   .nav-links {
     display: none;
     flex-direction: column;
@@ -405,7 +399,6 @@ body {
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
 
-  /* Show nav links when active */
   .nav-links.active {
     display: flex;
   }
@@ -417,7 +410,6 @@ body {
     border-radius: 0;
   }
 
-  /* Product and Billing sections stacked */
   .main-container {
     display: flex;
     flex-direction: column;

@@ -229,9 +229,75 @@ async function editProduct(productId) {
 }
 
 async function deleteProduct(productId) {
-    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-        return;
-    }
+    
+    const confirmPopup = document.createElement('div');
+    confirmPopup.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    `;
+
+    confirmPopup.innerHTML = `
+        <div style="
+            background: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            max-width: 350px;
+            width: 90%;
+            animation: fadeIn 0.3s ease;
+        ">
+            <h3 style="margin-bottom: 15px; color: #333;">Are you sure?</h3>
+            <p style="margin-bottom: 20px; color: #666;">This action cannot be undone.</p>
+            <div style="display: flex; justify-content: center; gap: 10px;">
+                <button id="confirmYes" style="
+                    background: #e74c3c;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 500;
+                ">Delete</button>
+                <button id="confirmNo" style="
+                    background: #bdc3c7;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 500;
+                ">Cancel</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(confirmPopup);
+
+   
+    const yesBtn = document.getElementById('confirmYes');
+    const noBtn = document.getElementById('confirmNo');
+
+    const userConfirmed = await new Promise(resolve => {
+        yesBtn.onclick = () => {
+            document.body.removeChild(confirmPopup);
+            resolve(true);
+        };
+        noBtn.onclick = () => {
+            document.body.removeChild(confirmPopup);
+            resolve(false);
+        };
+    });
+
+    if (!userConfirmed) return;
 
     try {
         const response = await fetch(`/api/products/${productId}`, {
@@ -250,6 +316,7 @@ async function deleteProduct(productId) {
         showNotification('Error deleting product', 'error');
     }
 }
+
 
 function showNotification(message, type = 'info') {
    

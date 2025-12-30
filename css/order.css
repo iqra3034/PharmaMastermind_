@@ -358,7 +358,6 @@ h2 {
     transform: translateY(0);
 }
 
-/* Tablet aur chhoti screens ke liye */
 @media (max-width: 768px) {
     .container {
         padding: 10px;
@@ -394,7 +393,6 @@ h2 {
     }
 }
 
-/* Chhoti mobile screen (≤ 480px) */
 @media (max-width: 480px) {
     .container {
         padding: 8px;

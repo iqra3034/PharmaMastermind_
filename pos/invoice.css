@@ -314,8 +314,6 @@ input::placeholder {
 }
 
 
-/* ---------------- RESPONSIVE DESIGN ---------------- */
-
 @media (max-width: 992px) {
 
   .navbar {
@@ -354,9 +352,6 @@ input::placeholder {
 }
 
 
-    /* ---------------- INVOICE PAGE RESPONSIVE DESIGN ---------------- */
-/* ---------------- RESPONSIVE DESIGN ---------------- */
-
 @media (max-width: 992px) {
 
   .navbar {
@@ -379,7 +374,6 @@ input::placeholder {
   }
 }
 
-/* ---------------- SMALL SCREEN (MOBILE) ---------------- */
 @media (max-width: 768px) {
 
   .menu-toggle {
@@ -441,7 +435,6 @@ input::placeholder {
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-  /* Hide toggle on large screens */
   @media (min-width: 769px) {
     .menu-toggle {
       display: none;
@@ -469,7 +462,7 @@ input::placeholder {
     border-radius: 0;
   }
 
-  /* Search Container */
+ 
   .search-container {
     width: 95%;
     padding: 1.5rem;
@@ -492,7 +485,6 @@ input::placeholder {
     font-size: 1rem;
   }
 
-  /* Invoice layout */
   .invoice-display {
     padding: 1.5rem;
     border-radius: 12px;

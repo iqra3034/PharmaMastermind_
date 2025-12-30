@@ -354,7 +354,6 @@
     }
 }
 
-/* 📱 Mobile Screens */
 @media (max-width: 768px) {
     body {
         flex-direction: column;
@@ -407,7 +406,6 @@
         width: 100%;
     }
 
-    /* Inventory grid for small screens */
     .inventory-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -430,7 +428,6 @@
     }
 }
 
-/* 💻 Tablets only */
 @media (min-width: 769px) and (max-width: 1024px) {
     .sidebar {
         width: 220px;

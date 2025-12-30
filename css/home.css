@@ -232,7 +232,6 @@ main {
     }
 }
 
-/* 📟 Tablets Landscape (max-width: 1024px) */
 @media (max-width: 1024px) {
     main {
         padding: 2rem 1.5rem;
@@ -319,7 +318,6 @@ main {
     }
 }
 
-/* 📱 Very Small Phones (max-width: 400px) */
 @media (max-width: 400px) {
     .top-bar {
         padding: 0.8rem;

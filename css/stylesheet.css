@@ -250,9 +250,6 @@ header {
     font-size: 20px;
 }
 
-/* 🌐 Responsive Design */
-
-/* Tablets (portrait + landscape) */
 @media (max-width: 1024px) {
     .sidebar {
         width: 220px;
@@ -268,14 +265,12 @@ header {
     }
 }
 
-/* 📱 Mobile Screens */
 @media (max-width: 768px) {
     body {
         flex-direction: column;
         overflow-x: hidden;
     }
 
-    /* Sidebar mobile view */
     .sidebar {
         position: fixed;
         top: 0;
@@ -314,7 +309,6 @@ header {
         width: 100%;
     }
 
-    /* Inventory grid for small screens */
     .inventory-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -337,7 +331,6 @@ header {
     }
 }
 
-/* 💻 Tablets only */
 @media (min-width: 769px) and (max-width: 1024px) {
     .sidebar {
         width: 220px;

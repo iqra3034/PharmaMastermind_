@@ -179,6 +179,46 @@ textarea {
   display: none;
 }
 
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quantity-control .btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background-color: #d9d9d9;
+  font-size: 24px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity-control .btn:hover {
+  background-color: #bfbfbf;
+}
+
+.quantity-control input::-webkit-outer-spin-button,
+.quantity-control input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.quantity-control input[type=number] {
+  
+  text-align: center;
+  width: 50px;
+  font-size: 18px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
 
 @media (max-width: 992px) {
   .navbar {

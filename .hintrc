@@ -22,7 +22,8 @@
       "default",
       {
         "ignore": [
-          "backdrop-filter"
+          "backdrop-filter",
+          "-moz-appearance"
         ]
       }
     ],
@@ -32,6 +33,7 @@
         "link-name": "off",
         "button-name": "off"
       }
-    ]
+    ],
+    "button-type": "off"
   }
 }

@@ -102,18 +102,20 @@ function updateTotal() {
     document.getElementById('total').value = total;
 }
 
-function increaseQuantity() {
+function increaseQuantity(event) {
+    if (event) event.preventDefault(); // stop form submission
     let quantityInput = document.getElementById('quantity');
     let currentQuantity = parseInt(quantityInput.value, 10);
     const maxQuantity = parseInt(quantityInput.max) || 999;
-    
+
     if (currentQuantity < maxQuantity) {
         quantityInput.value = currentQuantity + 1;
         updateTotal();
     }
 }
 
-function decreaseQuantity() {
+function decreaseQuantity(event) {
+    if (event) event.preventDefault(); 
     let quantityInput = document.getElementById('quantity');
     let currentQuantity = parseInt(quantityInput.value, 10);
     if (currentQuantity > 1) {
@@ -247,3 +249,17 @@ document.addEventListener("DOMContentLoaded", function() {
     navLinks.classList.toggle('active');
   });
 });
+
+function increaseQuantity() {
+  const input = document.getElementById("number-of-products");
+  input.value = parseInt(input.value) + 1;
+}
+
+function decreaseQuantity() {
+  const input = document.getElementById("number-of-products");
+  if (input.value > 1) {
+    input.value = parseInt(input.value) - 1;
+  }
+}
+
+

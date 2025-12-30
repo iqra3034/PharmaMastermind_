@@ -297,14 +297,12 @@
     }
 }
 
-/* 📱 Mobile Screens */
 @media (max-width: 768px) {
     body {
         flex-direction: column;
         overflow-x: hidden;
     }
 
-    /* Sidebar mobile view */
     .sidebar {
         position: fixed;
         top: 0;
@@ -343,7 +341,6 @@
         width: 100%;
     }
 
-    /* Inventory grid for small screens */
     .inventory-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -379,12 +376,11 @@
     }
 
     .filters input {
-        order: -1; /* search bar ko upar dikhane ke liye */
+        order: -1; 
     }
 
 }
 
-/* 💻 Tablets only */
 @media (min-width: 769px) and (max-width: 1024px) {
     .sidebar {
         width: 220px;
