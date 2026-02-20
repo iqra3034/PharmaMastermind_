@@ -891,23 +891,15 @@ def add_product():
     try:
         data = request.form
         
-        
-        image_path = None
-        if 'image' in request.files:
-            image = request.files['image']
-            if image.filename != '':
-        
-                image_filename = f"product_{data['product_id']}_{image.filename}"
-                image_path = f"/pictures/{image_filename}"
-                image.save(f"pictures/{image_filename}")
-        
         cur = mysql.connection.cursor()
+
+        # 🔥 product_id ko bilkul mention nahi karna
         cur.execute("""
-            INSERT INTO products (product_id, product_name, brand, description, price, 
-                                stock_quantity, category, expiry_date, image_path)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO products 
+            (product_name, brand, description, price, 
+             stock_quantity, category, expiry_date, image_path)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            data['product_id'],
             data['product_name'],
             data.get('brand', 'Generic'),
             data.get('description', ''),
@@ -915,12 +907,32 @@ def add_product():
             int(data['stock_quantity']),
             data['category'],
             data['expiry_date'] if data['expiry_date'] else None,
-            image_path
+            None
         ))
+
+        # 🔥 yahan se auto generated ID le lo
+        new_product_id = cur.lastrowid
+
+        image_path = None
+        if 'image' in request.files:
+            image = request.files['image']
+            if image.filename != '':
+                image_filename = f"product_{new_product_id}_{image.filename}"
+                image_path = f"/pictures/{image_filename}"
+                image.save(f"pictures/{image_filename}")
+
+                # image_path update karo
+                cur.execute("""
+                    UPDATE products 
+                    SET image_path=%s 
+                    WHERE product_id=%s
+                """, (image_path, new_product_id))
+
         mysql.connection.commit()
         cur.close()
-        
+
         return jsonify({"message": "Product added successfully"}), 201
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

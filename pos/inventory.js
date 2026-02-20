@@ -159,12 +159,12 @@ async function handleFormSubmit(event) {
 
     
     formData.append('product_name', document.getElementById('productName').value);
-    formData.append('product_id', document.getElementById('productId').value);
+    
     formData.append('category', document.getElementById('category').value);
     formData.append('expiry_date', document.getElementById('expiryDate').value);
     formData.append('stock_quantity', document.getElementById('quantity').value);
     formData.append('price', document.getElementById('costPrice').value);
-    formData.append('brand', 'Generic'); // Default brand
+    formData.append('brand', 'Generic'); 
     formData.append('description', `${document.getElementById('productName').value} - ${document.getElementById('category').value}`);
 
  
