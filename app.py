@@ -910,7 +910,6 @@ def add_product():
             None
         ))
 
-        # 🔥 yahan se auto generated ID le lo
         new_product_id = cur.lastrowid
 
         image_path = None
@@ -921,7 +920,6 @@ def add_product():
                 image_path = f"/pictures/{image_filename}"
                 image.save(f"pictures/{image_filename}")
 
-                # image_path update karo
                 cur.execute("""
                     UPDATE products 
                     SET image_path=%s 
