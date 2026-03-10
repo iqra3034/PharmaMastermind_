@@ -729,7 +729,7 @@ def report_expiry():
             SELECT product_id, product_name, expiry_date, stock_quantity
             FROM products
             WHERE expiry_date IS NOT NULL
-            ORDER BY expiry_date ASC
+            ORDER BY product_id ASC
             """
         )
         rows = cursor.fetchall()
