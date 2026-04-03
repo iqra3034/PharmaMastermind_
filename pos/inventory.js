@@ -14,7 +14,7 @@ function setupEventListeners() {
 
     document.getElementById('uploadArea').addEventListener('click', () => {
         document.getElementById('imageInput').click();
-    });
+    });   
 
     document.getElementById('imageInput').addEventListener('change', handleImageUpload);
 

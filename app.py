@@ -893,7 +893,6 @@ def add_product():
         
         cur = mysql.connection.cursor()
 
-        # 🔥 product_id ko bilkul mention nahi karna
         cur.execute("""
             INSERT INTO products 
             (product_name, brand, description, price, 
